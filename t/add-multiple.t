@@ -1,4 +1,4 @@
-use Test::More tests => 13;
+use Test::More;
 
 use CPAN::Mini::Inject;
 use File::Path;
@@ -8,6 +8,14 @@ mkdir( 't/local/MYCPAN' );
 my $mcpi;
 $mcpi = CPAN::Mini::Inject->new;
 $mcpi->loadcfg( 't/.mcpani/config' )->parsecfg;
+
+my @files = qw(
+  t/local/mymodules/CPAN-Mini-Inject-0.01.tar.gz
+  t/local/mymodules/Dist-Metadata-Test-MetaFile-2.2.tar.gz
+  t/local/mymodules/Dist-Metadata-Test-MetaFile-2.2.tar.gz
+  t/local/mymodules/Dist-Metadata-Test-MetaFile-Only.tar.gz
+);
+ok( -e $_, "archive $_ exists" ) for @files;
 
 $mcpi->add(
   module   => 'CPAN::Mini::Inject',
@@ -70,3 +78,5 @@ is_deeply(
 );
 
 rmtree( 't/local/MYCPAN', 0, 1 );
+
+done_testing();
