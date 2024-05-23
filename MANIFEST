@@ -7,7 +7,7 @@ lib/CPAN/Mini/Inject/Config.pm
 MANIFEST
 META.json
 META.yml
-README
+README.pod
 t/.mcpani/config
 t/.mcpani/config_bad
 t/.mcpani/config_badremote
