@@ -29,7 +29,7 @@ for( 1 .. 4 ) {
 my $mcpi = CPAN::Mini::Inject->new;
 $mcpi->loadcfg( 't/.mcpani/config' )->parsecfg;
 $mcpi->{config}{remote} =~ s/:\d{5}\b/:$port/;
-diag( "CONFIG: " . Dumper($mcpi->{config}); use Data::Dumper;
+diag( "CONFIG: " . Dumper($mcpi->{config})); use Data::Dumper;
 
 $mcpi->testremote;
 is( $mcpi->{site}, $url, 'Correct remote URL' );
