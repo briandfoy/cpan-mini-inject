@@ -1,4 +1,4 @@
-package Test::Data;
+package CPAN::Mini::Inject;
 use strict;
 use warnings;
 
