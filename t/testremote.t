@@ -13,19 +13,24 @@ BEGIN {
 }
 
 my $port = Net::EmptyPort::empty_port;
+my $url = "http://localhost:$port/";
+
 my $server = CPANServer->new( $port );
 my $pid    = $server->background;
 ok( $pid, 'HTTP Server started' );
-# Give server time to get going.
-sleep 1;
-
 $SIG{__DIE__} = sub { kill( 9, $pid ) };
+
+for( 1 .. 4 ) {
+  my $sleep = $_ * 2;
+  diag("Sleeping $sleep seconds waiting for server");
+  last if can_fetch($url);
+}
 
 my $mcpi = CPAN::Mini::Inject->new;
 $mcpi->loadcfg( 't/.mcpani/config' )->parsecfg;
 $mcpi->{config}{remote} =~ s/:\d{5}\b/:$port/;
+diag( "CONFIG: " . Dumper($mcpi->{config}); use Data::Dumper;
 
-my $url = "http://localhost:$port/";
 $mcpi->testremote;
 is( $mcpi->{site}, $url, 'Correct remote URL' );
 
