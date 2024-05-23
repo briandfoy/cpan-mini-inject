@@ -10,21 +10,19 @@ use File::Spec::Functions qw(rootdir catfile);
 
 CPAN::Mini::Inject::Config - Config for CPAN::Mini::Inject
 
-=head1 VERSION
-
-Version 0.37
+=over 4
 
 =cut
 
 our $VERSION = '0.37';
 
-=head2 C<new>
+=item C<new>
 
 =cut
 
 sub new { bless { file => undef }, $_[0] }
 
-=head2 C<< config_file( [FILE] ) >>
+=item C<< config_file( [FILE] ) >>
 
 =cut
 
@@ -39,7 +37,7 @@ sub config_file {
   $self->{file};
 }
 
-=head2 C<< load_config() >>
+=item C<< load_config() >>
 
 loadcfg accepts a CPAN::Mini::Inject config file or if not defined
 will search the following four places in order:
@@ -97,7 +95,7 @@ sub _find_config {
   return;
 }
 
-=head2 C<< parse_config() >>
+=item C<< parse_config() >>
 
 parsecfg reads the config file stored in the instance variable cfgfile and
 creates a hash in config with each setting.
@@ -174,7 +172,7 @@ sub parse_config {
   return $self;
 }
 
-=head2 C<< get( DIRECTIVE ) >>
+=item C<< get( DIRECTIVE ) >>
 
 Return the value for the named configuration directive.
 
@@ -182,13 +180,15 @@ Return the value for the named configuration directive.
 
 sub get { $_[0]->{ $_[1] } }
 
-=head2 C<< set( DIRECTIVE, VALUE ) >>
+=item C<< set( DIRECTIVE, VALUE ) >>
 
 Sets the value for the named configuration directive.
 
 =cut
 
 sub set { $_[0]->{ $_[1] } = $_[2] }
+
+=back
 
 =head1 BUGS
 
