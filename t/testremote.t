@@ -22,6 +22,7 @@ $SIG{__DIE__} = sub { kill( 9, $pid ) };
 
 for( 1 .. 4 ) {
   my $sleep = $_ * 2;
+  sleep $sleep;
   diag("Sleeping $sleep seconds waiting for server");
   last if can_fetch($url);
 }
