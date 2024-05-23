@@ -20,16 +20,12 @@ use Dist::Metadata ();
 
 CPAN::Mini::Inject - Inject modules into a CPAN::Mini mirror.
 
-=head1 VERSION
-
-Version 0.37
-
 =cut
 
 our $VERSION = '1.001';
 our @ISA     = qw( CPAN::Mini );
 
-=head1 Synopsis
+=head1 SYNOPSIS
 
 If you're not going to customize the way CPAN::Mini::Inject works you
 probably want to look at the L<mcpani> command instead.
@@ -710,33 +706,29 @@ sub _fmtdate {
   return "$date[0], $date[2] $date[1] $date[4] $date[3] GMT";
 }
 
-=head1 See Also
+=head1 SEE ALSO
 
 L<CPAN::Mini>
-
-=head1 Current Maintainer
-
-Christian Walde C<< <walde.christian@googlemail.com> >>
 
 =head1 Original Author
 
 Shawn Sorichetti, C<< <ssoriche@cpan.org> >>
 
-=head1 Acknowledgements
+=head1 ACKNOWLEDGEMENTS
 
 Special thanks to David Bartle, for bringing this module up
 to date, and resolving the reported bugs.
 
 Thanks to Jozef Kutej <jozef@kutej.net> for numerous patches.
 
-=head1 Bugs
+=head1 BUGS
 
 Please report any bugs or feature requests to
 C<bug-cpan-mini-inject@rt.cpan.org>, or through the web interface at
 L<http://rt.cpan.org>.  I will be notified, and then you'll automatically
 be notified of progress on your bug as I make changes.
 
-=head1 Copyright & License
+=head1 COPYRIGHT AND LICENSE
 
 Copyright 2008-2009 Shawn Sorichetti, Andy Armstrong, All Rights Reserved.
 
