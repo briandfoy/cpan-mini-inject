@@ -1,7 +1,5 @@
 bin/mcpani
-Build.PL
 Changes
-inc/MyBuilder.pm
 lib/CPAN/Mini/Inject.pm
 lib/CPAN/Mini/Inject/Config.pm
 MANIFEST
