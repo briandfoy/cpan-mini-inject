@@ -190,16 +190,11 @@ Sets the value for the named configuration directive.
 
 sub set { $_[0]->{ $_[1] } = $_[2] }
 
-=head1 CURRENT MAINTAINER
-
-Christian Walde C<< <walde.christian@googlemail.com> >>
-
 =head1 BUGS
 
-Please report any bugs or feature requests to
-C<bug-cpan-mini-inject@rt.cpan.org>, or through the web interface at
-L<http://rt.cpan.org>.  I will be notified, and then you'll automatically
-be notified of progress on your bug as I make changes.
+Report issues to the GitHub queue at
+
+	https://github.com/briandfoy/cpan-mini-inject/issues
 
 =cut
 
