@@ -1,30 +1,20 @@
 use Test::More;
 
-use LWP;
 use CPAN::Mini::Inject;
 use lib 't/lib';
-
-BEGIN {
-  plan skip_all => "HTTP::Server::Simple required to test update_mirror"
-   if not eval "use CPANServer; 1";
-  plan skip_all => "Net::EmptyPort required to test update_mirror"
-   if not eval "use Net::EmptyPort; 1";
-}
+use localserver;
 
 my $port =  empty_port();
 my( $pid ) = start_server($port);
-diag( "$$: PORT: $port" );
-diag( "$$: PID: $pid" );
-
-pass();
+diag( "$$: PORT: $port" ) if $ENV{TEST_VERBOSE};
+diag( "$$: PID: $pid" ) if $ENV{TEST_VERBOSE};
 
 my $url = "http://localhost:$port/";
-diag( "$$: URL $url" );
 
 for( 1 .. 4 ) {
   my $sleep = $_ * 2;
   sleep $sleep;
-  diag("Sleeping $sleep seconds waiting for server");
+  diag("Sleeping $sleep seconds waiting for server") if $ENV{TEST_VERBOSE};
   last if can_fetch($url);
 }
 
@@ -50,33 +40,3 @@ kill( 9, $pid );
 unlink( 't/testconfig' );
 
 done_testing();
-
-
-sub can_fetch { LWP::UserAgent->new->get( shift )->is_success }
-
-sub start_server {
-	my( $port ) = @_;
-
-	my $child_pid = fork;
-
-	return $child_pid unless $child_pid == 0;
-
-	require HTTP::Daemon;
-	require HTTP::Status;
-
-	my $d = HTTP::Daemon->new( LocalPort => $port ) or return;
-	while (my $c = $d->accept) {
-		while (my $r = $c->get_request) {
-			if ($r->method eq 'GET') {
-				$c->send_file_response('t/html/index.html');
-				}
-			else {
-				$c->send_error(HTTP::Status::RC_FORBIDDEN)
-				}
-			}
-		$c->close;
-		undef($c);
-		}
-
-	exit;
-	}
