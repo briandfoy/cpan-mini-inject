@@ -1,10 +1,14 @@
 bin/mcpani
+Build.PL
 Changes
+inc/MyBuilder.pm
 lib/CPAN/Mini/Inject.pm
 lib/CPAN/Mini/Inject/Config.pm
+Makefile.PL
 MANIFEST
-META.json
-META.yml
+MANIFEST.SKIP
+MYMETA.json
+MYMETA.yml
 README.pod
 t/.mcpani/config
 t/.mcpani/config_bad
@@ -30,6 +34,8 @@ t/lib/filenames.pl
 t/loadcfg.t
 t/local/01mailrc.txt.gz.original
 t/local/CPAN/modules/02packages.details.txt.gz.original
+t/local/MYCPAN/authors/id/R/RW/RWSTAUNER/Dist-Metadata-Test-MetaFile-Only.tar.gz
+t/local/MYCPAN/authors/id/R/RW/RWSTAUNER/not-discoverable.tar.gz
 t/local/mymodules/CPAN-Mini-0.17.tar.gz
 t/local/mymodules/CPAN-Mini-Inject-0.01.tar.gz
 t/local/mymodules/Dist-Metadata-Test-MetaFile-2.2.tar.gz
@@ -48,3 +54,4 @@ t/testremote.t
 t/update_mirror.t
 t/writelist.t
 t/zz.exceptions.t
+TODO

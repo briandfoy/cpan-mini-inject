@@ -1,35 +1,20 @@
-\.tmproj$
-\B\.svn\b
-\B\.git\b
-\B\.gitignore\b
-^\.cvsignore
-^MANIFEST\.
-^Makefile$
-^Build$
-^andy/
-^incoming/
-^t/disabled/
-^blib/
-^pm_to_blib$
-^_build/
-~$
-^\.DS_Store
-^#.*#$
-^\.#
-^cover_db
-^try[.]store$
-^TODO$
-\.swp$
-^\.prove$
-^Session\.vim$
+
+#!start included /usr/local/perls/perl-5.18.1/lib/5.18.1/ExtUtils/MANIFEST.SKIP
 # Avoid version control files.
 \bRCS\b
 \bCVS\b
 \bSCCS\b
 ,v$
+\B\.svn\b
+\B\.git\b
+\B\.gitignore\b
 \b_darcs\b
-\B\.gitignore
-\B\.releaserc
+\B\.cvsignore$
+
+# Avoid VMS specific MakeMaker generated files
+\bDescrip.MMS$
+\bDESCRIP.MMS$
+\bdescrip.mms$
 
 # Avoid Makemaker generated and utility files.
 \bMANIFEST\.bak
@@ -39,19 +24,47 @@
 \bpm_to_blib\.ts$
 \bpm_to_blib$
 \bblibdirs\.ts$         # 6.18 through 6.25 generated this
+
 # Avoid Module::Build generated and utility files.
 \bBuild$
-\bBuild.bat$
 \b_build/
+\bBuild.bat$
+\bBuild.COM$
+\bBUILD.COM$
+\bbuild.com$
+
 # Avoid temp and backup files.
+~$
 \.old$
 \#$
 \b\.#
-# Avoid Devel::Cover files.
+\.bak$
+\.tmp$
+\.#
+\.rej$
+
+# Avoid OS-specific files/dirs
+# Mac OSX metadata
+\B\.DS_Store
+# Mac OSX SMB mount metadata files
+\B\._
+
+# Avoid Devel::Cover and Devel::CoverX::Covered files.
 \bcover_db\b
-^MYMETA.yml$
-^MYMETA\.json$
-^CPAN-Mini-Inject-.*\.tar\.gz
-pod2ht.*\.tmp
-t/local/MYCPAN
-t/local/WRITEREPO
+\bcovered\b
+
+# Avoid MYMETA files
+^MYMETA\.
+#!end included /usr/local/perls/perl-5.18.1/lib/5.18.1/ExtUtils/MANIFEST.SKIP
+
+\.?appveyor.yml
+\.releaserc
+\.lwpcookies
+^CPAN-.*
+\bMANIFEST\s\d
+\bChanges\s\d
+\.icloud$
+\A\.github\b
+
+\.gitattributes\b
+t/local/WRITEREPO/modulelist
