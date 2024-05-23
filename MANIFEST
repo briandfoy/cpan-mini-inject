@@ -7,8 +7,6 @@ lib/CPAN/Mini/Inject/Config.pm
 Makefile.PL
 MANIFEST
 MANIFEST.SKIP
-MYMETA.json
-MYMETA.yml
 README.pod
 t/.mcpani/config
 t/.mcpani/config_bad
@@ -31,6 +29,7 @@ t/html/index.html
 t/inject.t
 t/lib/CPANServer.pm
 t/lib/filenames.pl
+t/lib/localserver.pm
 t/loadcfg.t
 t/local/01mailrc.txt.gz.original
 t/local/CPAN/modules/02packages.details.txt.gz.original
