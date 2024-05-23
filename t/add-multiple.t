@@ -12,7 +12,6 @@ $mcpi->loadcfg( 't/.mcpani/config' )->parsecfg;
 my @files = qw(
   t/local/mymodules/CPAN-Mini-Inject-0.01.tar.gz
   t/local/mymodules/Dist-Metadata-Test-MetaFile-2.2.tar.gz
-  t/local/mymodules/Dist-Metadata-Test-MetaFile-2.2.tar.gz
   t/local/mymodules/Dist-Metadata-Test-MetaFile-Only.tar.gz
 );
 ok( -e $_, "archive $_ exists" ) for @files;
@@ -40,11 +39,16 @@ $mcpi->add(
 my $auth_path = File::Spec->catfile( 'R', 'RW', 'RWSTAUNER' );
 is( $mcpi->{authdir}, $auth_path, 'author directory' );
 
-foreach $dist ( qw(
+my @dist_files = qw(
   t/local/MYCPAN/authors/id/S/SS/SSORICHE/CPAN-Mini-Inject-0.01.tar.gz
   t/local/MYCPAN/authors/id/R/RW/RWSTAUNER/Dist-Metadata-Test-MetaFile-2.2.tar.gz
   t/local/MYCPAN/authors/id/R/RW/RWSTAUNER/Dist-Metadata-Test-MetaFile-Only.tar.gz
-) ) {
+);
+
+foreach $dist ( @dist_files ) {
+  my @stat = stat($dist);
+  diag( "$dist mode " . sprintf "%o", $stat[2] );
+  ok( -e $dist, "Added module '$dist' exists" );
   ok( -r $dist, "Added module '$dist' is readable" );
 }
 
