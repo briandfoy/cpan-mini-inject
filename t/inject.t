@@ -172,7 +172,7 @@ subtest 'inject the modules' => sub {
 						my $rc = open my $chk, '<', $checksums_path;
 						my $checksum_text = join "", <$chk>;
 						close $chk;
-						unlike $checksum_text, qr{$authors_dir/id}, "root path isn't leaked to checksums";
+						unlike $checksum_text, qr{\Q$authors_dir\E/id}, "root path isn't leaked to checksums";
 						}
 					else {
 						fail "Can't check CHECKSUMS since it doesn't exist";
