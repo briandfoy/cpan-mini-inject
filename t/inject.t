@@ -17,7 +17,6 @@ use Local::utils;
 my $class = 'CPAN::Mini::Inject';
 
 my $temp_dir = File::Temp::tempdir(CLEANUP=>1);
-diag( "root is <$temp_dir>" );
 
 =begin comment
 
