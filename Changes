@@ -1,5 +1,18 @@
 Revision history for CPAN-Mini-Inject
 
+1.001_01 2024-05-24T23:31:01Z
+	* fix bug in t/update_mirror.t that caused weird issues when the 
+	test web server went away (AndyA/CPAN--Mini--Inject#26, from
+	Lukas Märdian)
+	* added --skip_cleanup for updatig a mirror (AndyA/CPAN--Mini--Inject#1,
+	from Matt Lanier)
+	* improved some docs (AndyA/CPAN--Mini--Inject#18, from Tim Bunce)
+	* verbose now reports each time a module is injected (AndyA/CPAN--Mini--Inject#21,
+	from Wolfgang Pecho)
+	* repo is now https://github.com/briandfoy/cpan-mini-inject . Added
+	GitHub workflows too.
+	* tests can now be run in parallel.
+
 0.37    2023/06/06
         - add a test dependency
 
