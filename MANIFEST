@@ -29,7 +29,6 @@ t/lib/CPANServer.pm
 t/lib/filenames.pl
 t/lib/Local/localserver.pm
 t/lib/Local/utils.pm
-t/lib/localserver.pm
 t/loadcfg.t
 t/local/01mailrc.txt.gz.original
 t/local/CPAN/modules/02packages.details.txt.gz.original
