@@ -5,7 +5,7 @@ use Test::More;
 
 use CPAN::Mini::Inject;
 use lib 't/lib';
-use localserver;
+use Local::localserver;
 
 my $port =  empty_port();
 my( $pid ) = start_server($port);
