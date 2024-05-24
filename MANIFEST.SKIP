@@ -68,3 +68,4 @@
 
 \.gitattributes\b
 t/local/WRITEREPO/modulelist
+^t/local/CPAN/authors
