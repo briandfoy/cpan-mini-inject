@@ -32,8 +32,6 @@ t/lib/Local/utils.pm
 t/loadcfg.t
 t/local/01mailrc.txt.gz.original
 t/local/CPAN/modules/02packages.details.txt.gz.original
-t/local/MYCPAN/authors/id/R/RW/RWSTAUNER/Dist-Metadata-Test-MetaFile-Only.tar.gz
-t/local/MYCPAN/authors/id/R/RW/RWSTAUNER/not-discoverable.tar.gz
 t/local/mymodules/CPAN-Mini-0.17.tar.gz
 t/local/mymodules/CPAN-Mini-Inject-0.01.tar.gz
 t/local/mymodules/Dist-Metadata-Test-MetaFile-2.2.tar.gz
