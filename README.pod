@@ -16,9 +16,9 @@
 
 =for HTML <a href="https://metacpan.org/pod/CPAN::Mini::Inject"><img src="https://img.shields.io/cpan/v/CPAN-Mini-Inject.svg" /></A>
 
-=head1 The CPAN::Min::Inject module
+=head1 The CPAN::Mini::Inject module
 
-This is the I<README> for the L<CPAN::Min::Inject> Perl module. It provides
+This is the I<README> for the L<CPAN::Mini::Inject> Perl module. It provides
 convenience methods to test things about Perl data type instead of
 their values.
 
@@ -28,7 +28,7 @@ to read one again for any Perl module.
 
 =head2 Documentation
 
-To read about L<CPAN::Min::Inject>, look at the embedded documentation
+To read about L<CPAN::Mini::Inject>, look at the embedded documentation
 in the module itself. Inside the distribution, you can format it
 with L<perldoc|https://perldoc.perl.org/perldoc.html>:
 
@@ -51,8 +51,8 @@ there), or look at the test files in I<t/>.
 You can install this module with a CPAN client, which will resolve
 and install the dependencies:
 
-	% cpan CPAN::Min::Inject
-	% cpanm CPAN::Min::Inject
+	% cpan CPAN::Mini::Inject
+	% cpanm CPAN::Mini::Inject
 
 You can also install directly from the distribution directory, which
 will also install the dependencies:
