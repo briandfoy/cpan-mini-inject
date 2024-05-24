@@ -60,7 +60,6 @@ my %WriteMakefile = (
 		},
 
 	'TEST_REQUIRES' => {
-		'Test::InDistDir'       => '0',
 		'Test::More'            => '1',
 		},
 
