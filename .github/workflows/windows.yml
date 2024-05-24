@@ -100,6 +100,7 @@ jobs:
                 make clean
 # And, coverage reports
             - name: Run coverage tests
+              if: env.WINDOWS_SKIP_COVERAGE != 0
               env:
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
