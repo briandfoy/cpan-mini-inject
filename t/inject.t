@@ -25,7 +25,7 @@ C<remote> is the URL for the repo from which we'll download latest versions
 
 C<local> is our MiniCPAN
 
-C<repository> is ...
+C<repository> is the dir where we will keep the modules to inject
 
 =end comment
 
