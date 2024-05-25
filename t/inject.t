@@ -3,7 +3,6 @@ use warnings;
 
 use Test::More;
 
-use CPAN::Mini::Inject;
 use File::Path qw(make_path);
 use File::Copy;
 use File::Temp ();
@@ -32,6 +31,7 @@ C<repository> is the dir where we will keep the modules to inject
 
 subtest 'sanity' => sub {
 	use_ok $class or BAIL_OUT( "Could not load $class: $@" );
+	can_ok $class, 'new';
 	isa_ok $class->new, $class;
 	};
 
