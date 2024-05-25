@@ -12,6 +12,7 @@ use lib 't/lib';
 use Local::localserver;
 use Local::utils;
 
+$SIG{'INT'} = sub { print "\nCleaning up before exiting\n"; exit 1 };
 my $tmp_dir = File::Temp::tempdir( CLEANUP => 1 );
 my $tmp_config_file;
 
@@ -75,10 +76,12 @@ subtest 'update mirror' => sub {
 	ok can_fetch($url), "URL $url is available";
 
 	eval {
+		diag( "updating mirror, which can take a couple minutes" );
 		$mcpi->update_mirror(
 		  remote => $url,
 		  local  => $tmp_dir,
 		  trace  => 1,
+		  log_level => 'info',
 		  );
 		} or print STDERR "update_mirror died: $@";
 	};
