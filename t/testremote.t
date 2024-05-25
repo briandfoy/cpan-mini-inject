@@ -7,6 +7,8 @@ use CPAN::Mini::Inject;
 use lib 't/lib';
 use Local::localserver;
 
+$SIG{'INT'} = sub { print "\nCleaning up before exiting\n"; exit 1 };
+
 my $port =  empty_port();
 my( $pid ) = start_server($port);
 diag( "$$: PORT: $port" ) if $ENV{TEST_VERBOSE};

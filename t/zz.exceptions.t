@@ -7,6 +7,8 @@ BEGIN {
   plan tests => 12;
 }
 
+$SIG{'INT'} = sub { print "\nCleaning up before exiting\n"; exit 1 };
+
 use CPAN::Mini::Inject;
 use File::Path;
 use Env;

@@ -3,6 +3,8 @@ use Test::More;
 use CPAN::Mini::Inject;
 use File::Path;
 
+$SIG{'INT'} = sub { print "\nCleaning up before exiting\n"; exit 1 };
+
 mkdir( 't/local/MYCPAN' );
 
 my $mcpi;

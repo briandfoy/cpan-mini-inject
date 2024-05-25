@@ -12,6 +12,7 @@ use Local::utils;
 
 my $class = 'CPAN::Mini::Inject';
 
+$SIG{'INT'} = sub { print "\nCleaning up before exiting\n"; exit 1 };
 my $temp_dir = File::Temp::tempdir(CLEANUP=>1);
 
 subtest 'sanity' => sub {
