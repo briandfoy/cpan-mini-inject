@@ -41,12 +41,8 @@ t/parsecfg.t
 t/pod-coverage.t
 t/pod.t
 t/private.t
-t/read/authors/01mailrc.txt.gz
-t/read/MYCPAN/modulelist
-t/read/MYCPAN/test-0.01.tar.gz
 t/readlist.t
 t/testremote.t
 t/update_mirror.t
 t/writelist.t
 t/zz.exceptions.t
-TODO
