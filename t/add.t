@@ -85,10 +85,10 @@ subtest 'add' => sub {
 	ok -e $author_path, "author directory for $author exists";
 	is( mode($author_path), 0775, 'author dir mode is 775' ) if has_modes();
 
-	my $archive_path = catfile $author_path, $archive_file;
-	ok -e $archive_path, 'archive exists in repository';
-	is( mode($archive_path), 0664, 'archive path is mode is 664' ) if has_modes();
-	ok -r $archive_path, 'archive in repository is readable';
+	my $repo_archive_path = catfile $author_path, $archive_file;
+	ok -e $repo_archive_path, 'archive exists in repository';
+	is( mode($repo_archive_path), 0664, 'archive path is mode is 664' ) if has_modes();
+	ok -r $repo_archive_path, 'archive in repository is readable';
 	};
 
 
