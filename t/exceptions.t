@@ -127,53 +127,55 @@ HERE
 		};
 
 	subtest 'read-only repo' => sub {
-		skip 'this system does not do file modes', 3 unless has_modes();
-		my $tmp_config_file = catfile $temp_dir, 'bad_config';
+		SKIP: {
+			skip 'this system does not do file modes', 3 unless has_modes();
+			my $tmp_config_file = catfile $temp_dir, 'bad_config';
 
-		my $repo_dir = catfile $temp_dir, 'read-only-injects';
-		subtest 'create read-only repo dir' => sub {
-			ok make_path($repo_dir), 'created repo dir';
-			chmod 0555, $repo_dir;
-			is mode($repo_dir), 0555, 'repo dir has mode 444';
-			ok ! -w $repo_dir, 'repo dir is not writable';
-			};
+			my $repo_dir = catfile $temp_dir, 'read-only-injects';
+			subtest 'create read-only repo dir' => sub {
+				ok make_path($repo_dir), 'created repo dir';
+				chmod 0555, $repo_dir;
+				is mode($repo_dir), 0555, 'repo dir has mode 444';
+				ok ! -w $repo_dir, 'repo dir is not writable';
+				};
 
-		subtest 'create read-only repo config file' => sub {
-			my $fh;
-			if(open $fh, '>', $tmp_config_file) {
+			subtest 'create read-only repo config file' => sub {
+				my $fh;
+				if(open $fh, '>', $tmp_config_file) {
 				print {$fh} <<"HERE";
 local: $temp_dir
 remote: http://www.cpan.org
 repository: $repo_dir
 HERE
-				close $fh;
-				ok -e $tmp_config_file, 'config file exists';
-				ok -r $tmp_config_file, 'config file is readable';
-				}
-			else {
-				fail("Could not create read-only repo config file");
-				}
+					close $fh;
+					ok -e $tmp_config_file, 'config file exists';
+					ok -r $tmp_config_file, 'config file is readable';
+					}
+				else {
+					fail("Could not create read-only repo config file");
+					}
+				};
+
+			subtest 'try to add to read-only repo' => sub {
+				my $mcpi = $class->new;
+				isa_ok $mcpi, $class;
+
+				lives_ok { $mcpi->parsecfg($tmp_config_file) } 'read-only repo config file parses';
+				dies_ok {
+					$mcpi->add(
+					  module   => 'CPAN::Mini::Inject',
+					  authorid => 'SSORICHE',
+					  version  => '0.01',
+					  file     => 'test-0.01.tar.gz'
+					);
+				  }
+				  'read-only repository';
+				like $@, qr/Can not write to repository/, 'exception has expected message';
+				};
+
+			chmod 755, $repo_dir;
 			};
-
-		subtest 'try to add to read-only repo' => sub {
-			my $mcpi = $class->new;
-			isa_ok $mcpi, $class;
-
-			lives_ok { $mcpi->parsecfg($tmp_config_file) } 'read-only repo config file parses';
-			dies_ok {
-				$mcpi->add(
-				  module   => 'CPAN::Mini::Inject',
-				  authorid => 'SSORICHE',
-				  version  => '0.01',
-				  file     => 'test-0.01.tar.gz'
-				);
-			  }
-			  'read-only repository';
-			like $@, qr/Can not write to repository/, 'exception has expected message';
-			};
-
-		chmod 755, $repo_dir;
-		};
+		}
 	};
 
 subtest 'add exceptions' => sub {
