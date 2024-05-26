@@ -16,6 +16,7 @@ t/.mcpani/config_nowrite
 t/.mcpani/config_with_whitespaces
 t/add-multiple.t
 t/add.t
+t/exceptions.t
 t/html/01mailrc.txt.gz
 t/html/02packages.details.txt.gz
 t/html/03modlist.data.gz
@@ -42,4 +43,3 @@ t/readlist.t
 t/testremote.t
 t/update_mirror.t
 t/writelist.t
-t/exceptions.t
