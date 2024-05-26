@@ -4,6 +4,19 @@ use warnings;
 use Carp ();
 use Data::Dumper;
 
+sub global_config_exists {
+  return scalar grep { -r } qw(/usr/local/etc/mcpani /etc/mcpani);
+}
+
+
+sub has_modes {
+	$^O !~ /^MSWin|^cygwin/
+	}
+
+sub mode {
+	(stat $_[0])[2] & 07777;
+	}
+
 sub write_config {
 	my %defaults = qw(
 		local       t/local/CPAN

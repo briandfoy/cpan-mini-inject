@@ -7,6 +7,10 @@ use File::Path qw(make_path);
 use File::Spec::Functions qw(catfile);
 use File::Temp;
 
+use lib 't/lib';
+use Local::localserver;
+use Local::utils;
+
 my $class = 'CPAN::Mini::Inject';
 
 $SIG{'INT'} = sub { print "\nCleaning up before exiting\n"; exit 1 };
@@ -92,12 +96,5 @@ subtest 'add' => sub {
 	};
 
 
-sub has_modes {
-	$^O !~ /^MSWin|^cygwin/
-	}
-
-sub mode {
-	(stat $_[0])[2] & 07777;
-	}
 
 done_testing();

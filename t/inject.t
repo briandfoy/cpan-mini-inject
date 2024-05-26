@@ -232,15 +232,6 @@ subtest 'mailrc updated' => sub {
 
 done_testing();
 
-sub has_modes {
-	$^O !~ /^MSWin|^cygwin/
-	}
-
-sub mode {
-	(stat $_[0])[2] & 07777;
-	}
-
-
 __DATA__
 File:         02packages.details.txt
 URL:          http://www.perl.com/CPAN/modules/02packages.details.txt
