@@ -61,12 +61,9 @@ Revision history for CPAN-Mini-Inject
 
 0.27    2010-01-28
 	All the following are thanks to Jozef Kutej <jozef@kutej.net>:
-
 	* --discover-packages option added to parse .pm files inside
 	--file and extract package names andV versions.
-
 	* allow CHECKSUMS signing.
-
 	* keep just last added module version in 02packages.details.txt.
 
 0.26    2009-06-15
@@ -151,13 +148,11 @@ Revision history for CPAN-Mini-Inject
 	a bugfix to properly handle dirmode. (Thanks RJBS).
 
 0.06    2004-11-10
-
 	* mcpani now parses the file passed to it to determine module name
 	and version. Command line options override the parsing.
 	* loadcfg() croaks if no configuration file is found.
 
 0.04    2004-11-05
-
 	* t/readlist.t and t/writelist.t both skip failure tests if
 	the uid is 0.
 	* inject accepts a true parameter to enable verbose mode which
