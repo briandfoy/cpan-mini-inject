@@ -8,7 +8,6 @@ use CPAN::Mini;
 use CPAN::Mini::Inject::Config;
 use Carp;
 use Compress::Zlib;
-use Env;
 use File::Basename;
 use File::Copy;
 use File::Path qw( make_path );
