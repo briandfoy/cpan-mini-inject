@@ -69,7 +69,6 @@ my %WriteMakefile = (
 		'CPAN::Checksums'           => '2.13',
 		'CPAN::Mini'                => '0.32',
 		'Dist::Metadata'            => '0.921',
-		'Env'                       => '0',
 		'File::Basename'            => '0',
 		'File::Copy'                => '0',
 		'File::Path'                => '2.07',

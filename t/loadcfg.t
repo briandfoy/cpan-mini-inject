@@ -1,7 +1,6 @@
 use Test::More tests => 3;
 
 use CPAN::Mini::Inject;
-use Env;
 
 sub chkcfg {
   return 1 if ( -r '/usr/local/etc/mcpani' );
