@@ -1,174 +1,348 @@
+use strict;
+use warnings;
+
 use Test::More;
 
 BEGIN {
-  eval "use Test::Exception";
+	eval "use Test::Exception";
+	plan skip_all => "Test::Exception required for exceptions.t" if $@;
+	}
 
-  plan skip_all => "Test Exceptions required to test croaks" if $@;
-  plan tests => 12;
-}
+use File::Spec::Functions qw(catfile);
+use File::Path qw(make_path);
+use File::Temp ();
+
+use lib 't/lib';
+use Local::utils;
+
+my $class = 'CPAN::Mini::Inject';
 
 $SIG{'INT'} = sub { print "\nCleaning up before exiting\n"; exit 1 };
+my $temp_dir = File::Temp::tempdir(CLEANUP=>1);
 
-use CPAN::Mini::Inject;
-use File::Path;
-use Env;
-use lib 't/lib';
+subtest 'sanity' => sub {
+	use_ok $class or BAIL_OUT( "Could not load $class: $@" );
+	can_ok $class, 'new';
+	isa_ok $class->new, $class;
+	};
 
-sub chkcfg {
-  return 1 if ( -r '/usr/local/etc/mcpani' );
-  return 1 if ( -r '/etc/mcpani' );
-}
+subtest 'config problems' => sub {
+	subtest 'no config' => sub {
+		delete local $ENV{HOME};
+		delete local $ENV{MCPANI_CONFIG};
 
-my $prevhome;
-if ( defined( $ENV{HOME} ) ) {
-  $prevhome = $ENV{HOME};
-  delete $ENV{HOME};
-}
+		SKIP: {
+			skip 'Global config file exists. Cannot test no config situation.', 1 if global_config_exists();
+			my $mcpi = $class->new;
+			isa_ok $mcpi, $class;
+			dies_ok { $mcpi->loadcfg } 'No config file';
+			}
+		};
 
-my $mcpanienv;
-if ( defined( $ENV{MCPANI_CONFIG} ) ) {
-  $mcpanienv = $ENV{MCPANI_CONFIG};
-  delete $ENV{MCPANI_CONFIG};
-}
+	subtest 'bad config' => sub {
+		my $tmp_config_file = catfile $temp_dir, 'bad_config';
+		subtest 'create bad config file' => sub {
+			my $fh;
+			if( open $fh, '>', $tmp_config_file ) {
+				print {$fh} <<'HERE';
+# This file is missing a local setting.
+remote : http://www.cpan.org
+repository: t/local/MYCPAN
+passive: yes
+This line will be ignored
+HERE
+				ok close($fh), "created bad config file";
+				}
+			else {
+				fail("could not create config with missing local setting");
+				}
+			};
 
-# loadcfg()
-SKIP: {
-  skip 'Config file exists', 1 if chkcfg();
-  my $mcpi = CPAN::Mini::Inject->new;
-  dies_ok { $mcpi->loadcfg } 'No config file';
-}
+		ok -e $tmp_config_file, 'bad config with missing local setting file exists';
 
-{
-  # parsecfg()
-  my $mcpi = CPAN::Mini::Inject->new;
-  dies_ok { $mcpi->parsecfg( 't/.mcpani/config_bad' ); }
-  'Missing config option';
-}
+		my $mcpi = $class->new;
+		isa_ok $mcpi, $class;
+		dies_ok { $mcpi->parsecfg( $tmp_config_file ); } 'Missing local setting blows up';
+		};
 
-# readlist()
-SKIP: {
-  skip 'User is superuser and can always read', 1 if $< == 0;
-  skip 'User is generally superuser under cygwin and can read', 1 if $^O eq 'cygwin';
+	subtest 'unreadable' => sub {
+		SKIP: {
+			skip 'User is superuser and can always read', 1 if $< == 0;
+			skip 'User is generally superuser under cygwin and can read', 1 if $^O eq 'cygwin';
 
-  my $mcpi = CPAN::Mini::Inject->new;
+			my $repo_dir = catfile $temp_dir, 'injects';
+			ok make_path($repo_dir), "make_path for injects/ succeeded";
 
-  rmtree( ['t/local/MYCPAN/modulelist'], 0, 1 );
-  mkdir 't/local/MYCPAN';
-  $mcpi->parsecfg( 't/.mcpani/config_noread' );
-  dies_ok { $mcpi->readlist } 'unreadable file';
-  rmtree( ['t/local/MYCPAN/modulelist'], 0, 1 );
-}
+			my $tmp_config_file = catfile $temp_dir, 'bad_config';
+			my $fh;
+			if(open $fh, '>', $tmp_config_file) {
+				print {$fh} "Hello";
+				close $fh;
+				chmod 0111, $tmp_config_file;
+				is( mode($tmp_config_file), 0111, 'mode for config is 0111' );
+				ok -e $tmp_config_file, 'config file exists';
+				ok ! -r $tmp_config_file, 'config file is not readable';
+				}
+			else {
+				fail("Could not create an unreadable file");
+				}
 
-{
-  my $mcpi = CPAN::Mini::Inject->new;
-  $mcpi->parsecfg( 't/.mcpani/config' );
+			my $mcpi = $class->new;
+			isa_ok $mcpi, $class;
 
-  # add()
-  dies_ok {
-    $mcpi->add(
-      module   => 'CPAN::Mini::Inject',
-      authorid => 'SSORICHE',
-      version  => '0.01'
-    );
-  }
-  'Missing add param';
+			dies_ok { $mcpi->parsecfg($tmp_config_file) } 'unreadable file';
+			like $@, qr/Could not read file/, 'exception has expected message';
+			chmod 0644, $tmp_config_file;
+			}
+		};
 
-  dies_ok {
-    $mcpi->add(
-      module   => 'CPAN::Mini::Inject',
-      authorid => 'SSORICHE',
-      version  => '0.01',
-      file     => 'blahblah'
-    );
-  }
-  'Module file not readable';
+	subtest 'no repo config' => sub {
+		my $tmp_config_file = catfile $temp_dir, 'bad_config';
+		subtest 'create no repo config file' => sub {
+			my $fh;
+			if(open $fh, '>', $tmp_config_file) {
+				print {$fh} "local: t/local/CPAN\nremote: http://www.cpan.org\n";
+				close $fh;
+				ok -e $tmp_config_file, 'config file exists';
+				ok -r $tmp_config_file, 'config file is readable';
+				}
+			else {
+				fail("Could not create no repo config file");
+				}
+			};
 
-  lives_ok {
-    $mcpi->add(
-      authorid => 'RWSTAUNER',
-      file     => 't/local/mymodules/Dist-Metadata-Test-MetaFile-Only.tar.gz'
-    );
-  }
-  'Ok without module/version when discoverable';
+		my $mcpi = $class->new;
+		isa_ok $mcpi, $class;
 
-  lives_ok {
-    $mcpi->add(
-      module   => 'Who::Cares',
-      version  => '1',
-      authorid => 'RWSTAUNER',
-      file     => 't/local/mymodules/not-discoverable.tar.gz'
-    );
-  }
-  'Ok without module/version when specified';
+		lives_ok { $mcpi->parsecfg($tmp_config_file) } 'no repo config file parses';
+		dies_ok {
+			$mcpi->add(
+			  module   => 'CPAN::Mini::Inject',
+			  authorid => 'SSORICHE',
+			  version  => '0.01',
+			  file     => 'test-0.01.tar.gz'
+			);
+			} 'Missing config repository';
+		like $@, qr/No repository configured/, 'exception has expected message';
+		};
 
-  dies_ok {
-    $mcpi->add(
-      authorid => 'RWSTAUNER',
-      file     => 't/local/mymodules/not-discoverable.tar.gz'
-    );
-  }
-  'Dies without module/version when not discoverable';
-}
+	subtest 'read-only repo' => sub {
+		skip 'this system does not do file modes', 3 unless has_modes();
+		my $tmp_config_file = catfile $temp_dir, 'bad_config';
 
-{
-  my $mcpi = CPAN::Mini::Inject->new;
-  $mcpi->parsecfg( 't/.mcpani/config_norepo' );
+		my $repo_dir = catfile $temp_dir, 'read-only-injects';
+		subtest 'create read-only repo dir' => sub {
+			ok make_path($repo_dir), 'created repo dir';
+			chmod 0555, $repo_dir;
+			is mode($repo_dir), 0555, 'repo dir has mode 444';
+			ok ! -w $repo_dir, 'repo dir is not writable';
+			};
 
-  dies_ok {
-    $mcpi->add(
-      module   => 'CPAN::Mini::Inject',
-      authorid => 'SSORICHE',
-      version  => '0.01',
-      file     => 'test-0.01.tar.gz'
-    );
-  }
-  'Missing config repository';
+		subtest 'create read-only repo config file' => sub {
+			my $fh;
+			if(open $fh, '>', $tmp_config_file) {
+				print {$fh} <<"HERE";
+local: $temp_dir
+remote: http://www.cpan.org
+repository: $repo_dir
+HERE
+				close $fh;
+				ok -e $tmp_config_file, 'config file exists';
+				ok -r $tmp_config_file, 'config file is readable';
+				}
+			else {
+				fail("Could not create read-only repo config file");
+				}
+			};
 
-}
+		subtest 'try to add to read-only repo' => sub {
+			my $mcpi = $class->new;
+			isa_ok $mcpi, $class;
 
-SKIP: {
-  skip "We don't have a r/o repo", 2;
-  my $mcpi = CPAN::Mini::Inject->new;
-  $mcpi->parsecfg( 't/.mcpani/config_read' );
+			lives_ok { $mcpi->parsecfg($tmp_config_file) } 'read-only repo config file parses';
+			dies_ok {
+				$mcpi->add(
+				  module   => 'CPAN::Mini::Inject',
+				  authorid => 'SSORICHE',
+				  version  => '0.01',
+				  file     => 'test-0.01.tar.gz'
+				);
+			  }
+			  'read-only repository';
+			like $@, qr/Can not write to repository/, 'exception has expected message';
+			};
 
-  dies_ok {
-    $mcpi->add(
-      module   => 'CPAN::Mini::Inject',
-      authorid => 'SSORICHE',
-      version  => '0.01',
-      file     => 'test-0.01.tar.gz'
-    );
-  }
-  'read-only repository';
+		chmod 755, $repo_dir;
+		};
+	};
 
-  $mcpi->{config}{remote} = "ftp://blahblah http://blah blah";
-  dies_ok { $mcpi->testremote } 'No reachable site';
+subtest 'add exceptions' => sub {
+	my $repo_dir = catfile $temp_dir, 'injects';
+	subtest 'create repo dir' => sub {
+		ok make_path($repo_dir), 'created repo dir' unless -d $repo_dir;
+		chmod 0755, $repo_dir;
+		is mode($repo_dir), 0755, 'repo dir has mode 444';
+		ok -r $repo_dir, 'repo dir is readable';
+		ok -w $repo_dir, 'repo dir is writable';
+		};
 
-}
+	my $tmp_config_file = catfile $temp_dir, 'good_config';
+	subtest 'create config file' => sub {
+		my $fh;
+		if(open $fh, '>', $tmp_config_file) {
+			print {$fh} <<"HERE";
+local: $temp_dir
+remote : http://localhost:11027
+repository: $repo_dir
+dirmode: 0775
+passive: yes
+HERE
+			close $fh;
+			ok -e $tmp_config_file, 'config file exists';
+			ok -r $tmp_config_file, 'config file is readable';
+			}
+		else {
+			fail("Could not create config file");
+			}
+		};
+
+	my $mcpi = $class->new;
+	isa_ok $mcpi, $class;
+
+	lives_ok { $mcpi->parsecfg( $tmp_config_file ) } 'parsecfg works';
+
+	subtest 'missing file param' => sub {
+		dies_ok {
+			$mcpi->add(
+				module   => 'CPAN::Mini::Inject',
+				authorid => 'SSORICHE',
+				version  => '0.01'
+				);
+			} 'Missing add param';
+		like $@, qr/Required option not specified: file/,  'exception has expected message';
+		};
+
+	subtest 'module file is missing' => sub {
+		dies_ok {
+			$mcpi->add(
+				module   => 'CPAN::Mini::Inject',
+				authorid => 'SSORICHE',
+				version  => '0.01',
+				file     => 'blahblah'
+				);
+		} 'Module file not readable';
+		like $@, qr/Can not read module file: blahblah/,  'exception has expected message';
+		};
+
+	subtest 'discoverable' => sub {
+		lives_ok {
+			$mcpi->add(
+				authorid => 'RWSTAUNER',
+				file     => 't/local/mymodules/Dist-Metadata-Test-MetaFile-Only.tar.gz'
+				);
+			} 'Ok without module/version when discoverable';
+		};
+
+	subtest 'not discoverable' => sub {
+		lives_ok {
+			$mcpi->add(
+				module   => 'Who::Cares',
+				version  => '1',
+				authorid => 'RWSTAUNER',
+				file     => 't/local/mymodules/not-discoverable.tar.gz'
+				);
+  			} 'Ok without module/version when specified';
+  		};
+
+	subtest 'needs module and version when not discoverable' => sub {
+		dies_ok {
+			$mcpi->add(
+				authorid => 'RWSTAUNER',
+				file     => 't/local/mymodules/not-discoverable.tar.gz'
+				);
+			} 'Dies without module/version when not discoverable';
+		};
+	};
+
+subtest 'remote problems' => sub {
+	my $repo_dir = catfile $temp_dir, 'injects';
+	subtest 'create repo dir' => sub {
+		ok make_path($repo_dir), 'created repo dir' unless -d $repo_dir;
+		chmod 0755, $repo_dir;
+		is mode($repo_dir), 0755, 'repo dir has mode 755';
+		ok -r $repo_dir, 'repo dir is readable';
+		ok -w $repo_dir, 'repo dir is writable';
+		};
+
+	subtest 'unreachable remote' => sub {
+		my $tmp_config_file = catfile $temp_dir, 'good_config';
+		subtest 'create config file' => sub {
+			my $fh;
+			if(open $fh, '>', $tmp_config_file) {
+				print {$fh} <<"HERE";
+local: $temp_dir
+remote : http://asdf.asjfasf.asdf/
+repository: $repo_dir
+dirmode: 0775
+passive: yes
+HERE
+				close $fh;
+				ok -e $tmp_config_file, 'config file exists';
+				ok -r $tmp_config_file, 'config file is readable';
+				}
+			else {
+				fail("Could not create config file");
+				}
+			};
+
+		my $mcpi = $class->new;
+		isa_ok $mcpi, $class;
+		lives_ok { $mcpi->parsecfg( $tmp_config_file ) } 'parsecfg works';
+		diag "trying to connect to a bad site: this might take a minute";
+		dies_ok { $mcpi->testremote } 'No reachable site';
+		like $@, qr/Unable to connect/, 'exception has expected message';
+		};
+	};
 
 # writelist()
-SKIP: {
-  skip 'User is superuser and can always write', 1 if $< == 0;
-  skip 'User is generally superuser under cygwin and can write', 1 if $^O eq 'cygwin';
+subtest 'writelist' => sub {
+	SKIP: {
+		skip 'User is superuser and can always write', 1 if $< == 0;
+		skip 'User is generally superuser under cygwin and can write', 1 if $^O eq 'cygwin';
 
-  my $mcpi = CPAN::Mini::Inject->new;
-  rmtree( ['t/local/MYCPAN/modulelist'], 0, 1 );
-  mkdir 't/local/MYCPAN';
-  $mcpi->parsecfg( 't/.mcpani/config_nowrite' );
-  dies_ok { $mcpi->writelist } 'fail write file';
-  rmtree( ['t/local/MYCPAN/modulelist'], 0, 1 );
-}
+		my $repo_dir = catfile $temp_dir, 'injects';
+		subtest 'create repo dir' => sub {
+			ok make_path($repo_dir), 'created repo dir' unless -d $repo_dir;
+			chmod 0555, $repo_dir;
+			is mode($repo_dir), 0555, 'repo dir has mode 555';
+			ok -r $repo_dir, 'repo dir is readable';
+			ok ! -w $repo_dir, 'repo dir is not writable';
+			};
 
-# Setup routines
-sub genmodlist {
-  open( MODLIST, '>t/local/MYCPAN/modulelist' )
-   or die "Can not create t/local/MYCPAN/modulelist: $!";
-  print MODLIST << "EOF"
-CPAN::Checksums                   1.016  A/AN/ANDK/CPAN-Checksums-1.016.tar.gz
-CPAN::Mini                         0.18  R/RJ/RJBS/CPAN-Mini-0.18.tar.gz
-CPANPLUS                         0.0499  A/AU/AUTRIJUS/CPANPLUS-0.0499.tar.gz
-EOF
-   ;
-  close( MODLIST );
-}
+		my $tmp_config_file = catfile $temp_dir, 'config';
+		subtest 'create config file' => sub {
+			my $fh;
+			if(open $fh, '>', $tmp_config_file) {
+				print {$fh} <<"HERE";
+local: $temp_dir
+remote : http://www.cpan.org
+repository: $repo_dir
+HERE
+				close $fh;
+				ok -e $tmp_config_file, 'config file exists';
+				ok -r $tmp_config_file, 'config file is readable';
+				}
+			else {
+				fail("Could not create config file");
+				}
+			};
 
+		my $mcpi = $class->new;
+		isa_ok $mcpi, $class;
+		lives_ok { $mcpi->parsecfg( $tmp_config_file ) } 'parsecfg works';
+		dies_ok { $mcpi->writelist } 'fail write file';
+		like $@, qr//, 'exception has expected message';
+		}
+	};
+
+done_testing();
