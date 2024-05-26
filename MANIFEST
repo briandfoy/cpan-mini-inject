@@ -24,7 +24,6 @@ t/html/CPAN-Mini-2.1828.tar.gz
 t/html/CPAN-Mini-Inject-1.01.tar.gz
 t/html/index.html
 t/inject.t
-t/lib/filenames.pl
 t/lib/Local/localserver.pm
 t/lib/Local/utils.pm
 t/loadcfg.t
