@@ -183,7 +183,7 @@ subtest 'add exceptions' => sub {
 	subtest 'create repo dir' => sub {
 		ok make_path($repo_dir), 'created repo dir' unless -d $repo_dir;
 		chmod 0755, $repo_dir;
-		is mode($repo_dir), 0755, 'repo dir has mode 444';
+		is mode($repo_dir), 0755, 'repo dir has mode 444' if has_modes();
 		ok -r $repo_dir, 'repo dir is readable';
 		ok -w $repo_dir, 'repo dir is writable';
 		};
@@ -271,7 +271,7 @@ subtest 'remote problems' => sub {
 	subtest 'create repo dir' => sub {
 		ok make_path($repo_dir), 'created repo dir' unless -d $repo_dir;
 		chmod 0755, $repo_dir;
-		is mode($repo_dir), 0755, 'repo dir has mode 755';
+		is mode($repo_dir), 0755, 'repo dir has mode 755' if has_modes();
 		ok -r $repo_dir, 'repo dir is readable';
 		ok -w $repo_dir, 'repo dir is writable';
 		};
