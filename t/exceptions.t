@@ -11,6 +11,7 @@ BEGIN {
 use File::Spec::Functions qw(catfile);
 use File::Path qw(make_path);
 use File::Temp ();
+use Socket qw(getaddrinfo);
 
 use lib 't/lib';
 use Local::utils;
@@ -277,32 +278,44 @@ subtest 'remote problems' => sub {
 		};
 
 	subtest 'unreachable remote' => sub {
-		my $tmp_config_file = catfile $temp_dir, 'good_config';
-		subtest 'create config file' => sub {
-			my $fh;
-			if(open $fh, '>', $tmp_config_file) {
-				print {$fh} <<"HERE";
+		my $unreachable_host = 'com';
+		my $url = 'http://$host/';
+
+		my ($lookup_error, @result) = getaddrinfo $unreachable_host, 'http';
+
+diag( Dumper(\@result) ); use Data::Dumper;
+
+		SKIP: {
+			plan skip_all => 'bad host resolves, so cannot test that'
+				unless $lookup_error;
+
+			my $tmp_config_file = catfile $temp_dir, 'good_config';
+			subtest 'create config file' => sub {
+				my $fh;
+				if(open $fh, '>', $tmp_config_file) {
+					print {$fh} <<"HERE";
 local: $temp_dir
-remote : http://asdf.asjfasf.asdf/
+remote: $url
 repository: $repo_dir
 dirmode: 0775
 passive: yes
 HERE
-				close $fh;
-				ok -e $tmp_config_file, 'config file exists';
-				ok -r $tmp_config_file, 'config file is readable';
-				}
-			else {
-				fail("Could not create config file");
-				}
-			};
+					close $fh;
+					ok -e $tmp_config_file, 'config file exists';
+					ok -r $tmp_config_file, 'config file is readable';
+					}
+				else {
+					fail("Could not create config file");
+					}
+				};
 
-		my $mcpi = $class->new;
-		isa_ok $mcpi, $class;
-		lives_ok { $mcpi->parsecfg( $tmp_config_file ) } 'parsecfg works';
-		diag "trying to connect to a bad site: this might take a minute";
-		dies_ok { $mcpi->testremote } 'No reachable site';
-		like $@, qr/Unable to connect/, 'exception has expected message';
+			my $mcpi = $class->new;
+			isa_ok $mcpi, $class;
+			lives_ok { $mcpi->parsecfg( $tmp_config_file ) } 'parsecfg works';
+			diag "trying to connect to a bad site: this might take a minute";
+			dies_ok { $mcpi->testremote } 'No reachable site';
+			like $@, qr/Unable to connect/, 'exception has expected message';
+			}
 		};
 	};
 
