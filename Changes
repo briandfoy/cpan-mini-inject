@@ -1,5 +1,8 @@
 Revision history for CPAN-Mini-Inject
 
+1.002 2024-06-07T19:31:11Z
+	* promote to a user version
+
 1.001_02 2024-05-29T00:56:52Z
 	* Adjust the test for unreachable hosts when the tester resolves any host
 
