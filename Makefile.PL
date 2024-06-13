@@ -50,7 +50,7 @@ my %WriteMakefile = (
 	'ABSTRACT_FROM' => $main_file,
 	'VERSION_FROM'  => $main_file,
 	'LICENSE'		=> 'perl',
-	'AUTHOR'		=> 'brian d foy <briandfoy@pobox.com>',
+	'AUTHOR'		=> 'Shawn Sorichetti <ssoriche@cpan.org>',
 
   	'CONFIGURE_REQUIRES' => {
 		'ExtUtils::MakeMaker' => '6.64',
