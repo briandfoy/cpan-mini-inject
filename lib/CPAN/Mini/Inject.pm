@@ -15,6 +15,42 @@ use File::Spec;
 use LWP::Simple;
 use Dist::Metadata ();
 
+BEGIN {
+	use version 0.9915;
+	use CPAN::Meta::Converter;
+
+	# This is here because the CPAN::Meta package has not been updated
+	# since 2016 and it's unlikely that they'd accept a patch for this.
+	# see https://github.com/briandfoy/cpan-mini-inject/issues/11
+	package CPAN::Meta::Converter;
+
+	no warnings qw(redefine);
+
+	# lifted from CPAN::Meta::Converter
+	# https://fastapi.metacpan.org/source/DAGOLDEN/CPAN-Meta-2.150010/lib/CPAN/Meta/Converter.pm
+	sub _clean_version {
+	  my ($element) = @_;
+	  return 0 if ! defined $element;
+
+	  $element =~ s{^\s*}{};
+	  $element =~ s{\s*$}{};
+	  $element =~ s{^\.}{0.};
+
+	  return 0 if ! length $element;
+	  return 0 if ( $element eq 'undef' || $element eq '<undef>' );
+
+	  my $v = eval { version->parse($element) };
+	  # XXX check defined $v and not just $v because version objects leak memory
+	  # in boolean context -- dagolden, 2012-02-03
+	  if ( defined $v ) {
+		return _is_qv($v) ? $v->stringify : $element;
+	  }
+	  else {
+		return 0;
+	  }
+	}
+}
+
 =head1 NAME
 
 CPAN::Mini::Inject - Inject modules into a CPAN::Mini mirror.
