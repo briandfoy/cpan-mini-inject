@@ -83,6 +83,7 @@ my %WriteMakefile = (
 		'Net::EmptyPort'            => '0',
 		'Pod::Usage'                => '0',
 		'YAML'                      => '0',
+		'version'                   => '0.9915', # see briandfoy/cpan-mini-inject#11
 		},
 
 	'EXE_FILES' => [qw(bin/mcpani)],
