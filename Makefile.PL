@@ -67,6 +67,7 @@ my %WriteMakefile = (
 		'Carp'                      => '0',
 		'Compress::Zlib'            => '0',
 		'CPAN::Checksums'           => '2.13',
+		'CPAN::Meta'                => '2.150010',
 		'CPAN::Mini'                => '0.32',
 		'Dist::Metadata'            => '0.921',
 		'File::Basename'            => '0',
