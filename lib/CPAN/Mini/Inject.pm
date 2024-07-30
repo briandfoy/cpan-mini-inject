@@ -22,6 +22,7 @@ BEGIN {
 	# This is here because the CPAN::Meta package has not been updated
 	# since 2016 and it's unlikely that they'd accept a patch for this.
 	# see https://github.com/briandfoy/cpan-mini-inject/issues/11
+	# and https://github.com/Perl-Toolchain-Gang/CPAN-Meta#138
 	package CPAN::Meta::Converter;
 
 	no warnings qw(redefine);
@@ -343,10 +344,9 @@ sub add {
   # attempt to guess module and version
   my $distmeta = Dist::Metadata->new( file => $options{file} );
   my $packages = $distmeta->package_versions;
-
   # include passed in module and version (prefer the declared version)
   if ( $options{module} and $options{version} ) {
-    $packages->{ $options{module} } = $options{version};
+    $packages->{ $options{module} } ||= $options{version};
   }
 
   # if no packages were found we need explicit options
