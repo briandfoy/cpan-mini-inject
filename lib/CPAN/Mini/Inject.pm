@@ -343,6 +343,7 @@ sub add {
 
   # attempt to guess module and version
   my $distmeta = Dist::Metadata->new( file => $options{file} );
+
   my $packages = $distmeta->package_versions;
   # include passed in module and version (prefer the declared version)
   if ( $options{module} and $options{version} ) {
