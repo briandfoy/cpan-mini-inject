@@ -95,21 +95,20 @@ sub config_file {
 
 =item C<< load_config() >>
 
-loadcfg accepts a CPAN::Mini::Inject config file or if not defined
+loadcfg accepts a L<CPAN::Mini::Inject> config file or if not defined
 will search the following four places in order:
 
 =over 4
 
-=item * file pointed to by the environment variable MCPANI_CONFIG
+=item * file pointed to by the environment variable C<MCPANI_CONFIG>
 
-=item * $HOME/.mcpani/config
+=item * F<$HOME/.mcpani/config>
 
-=item * /usr/local/etc/mcpani
+=item * F</usr/local/etc/mcpani>
 
-=item * /etc/mcpani
+=item * F</etc/mcpani>
 
 =back
-
 
 loadcfg sets the instance variable cfgfile to the file found or undef if
 none is found.
