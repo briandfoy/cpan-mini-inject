@@ -4,6 +4,8 @@ package CPAN::Mini::Inject::Config;
 use strict;
 use warnings;
 
+our $VERSION = '0.38';
+
 use Carp;
 use File::Spec::Functions qw(rootdir catfile);
 
