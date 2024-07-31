@@ -283,48 +283,53 @@ sub update_mirror {
 
 =item C<add>
 
-Add a new module to the repository. The add method copies the module
-file into the repository with the same structure as a CPAN site. For
-example CPAN-Mini-Inject-0.01.tar.gz is copied to
-MYCPAN/authors/id/S/SS/SSORICHE. add creates the required directory
-structure below the repository.
+Add a new distribution to the repository. The C<add> method copies the
+distribution file into the repository with the same structure as a
+CPAN site. For example, F<CPAN-Mini-Inject-0.01.tar.gz> with author
+C<SSORICHE> is copied to F<MYCPAN/authors/id/S/SS/SSORICHE>. add
+creates the required directory structure below the repository.
 
 Packages found in the distribution will be added to the module list
-(for example both C<CPAN::Mini::Inject> and C<CPAN::Mini::Inject::Config>
-will be added to the F<modules/02packages.details.txt.gz> file).
+(for example both C<CPAN::Mini::Inject> and
+C<CPAN::Mini::Inject::Config> will be added to the
+F<modules/02packages.details.txt.gz> file).
 
-Packages will be looked for in the C<provides> key of the META file if present,
-otherwise the files in the dist will be searched.
-See L<Dist::Metadata> for more information.
+Packages will be looked for in the C<provides> key of the META file if
+present, otherwise the files in the dist will be searched. See
+L<Dist::Metadata> for more information.
 
 =over 4
 
 =item * module
 
-The name of the module to add.
-The distribution file will be searched for modules
-but you can specify the main one explicitly.
+(optional) The package name of the module to add. The distribution
+file will be searched for modules but you can specify the main one
+explicitly.
 
 =item * authorid
 
-CPAN author id. This does not have to be a real author id.
+(required) The CPAN ID of the module's author. Since this isn't
+actually CPAN, the ID does not need to exist on CPAN. Typically, this
+ID uses C<[A-Z]> and is three to ten letters. This is not enforced,
+but other CPAN tools may not like other sorts of names.
 
 =item * version
 
-The modules version number.
-Module names and versions will be determined,
-but you can specify one explicitly.
+(optional) The module's version number. If you don't specify this.
+C<add> will try to extract it from the distribution.
 
 =item * file
 
-The tar.gz of the module.
+(required) The path to the distribution file.
 
 =back
 
-  add( module => 'Module::Name',
-       authorid => 'AUTHOR',
-       version => 0.01,
-       file => './Module-Name-0.01.tar.gz' );
+  $mcpani->add(
+  	module   => 'Module::Name',
+	authorid => 'SOMEAUTHOR',
+	version  => 0.01,
+	file     => './Module-Name-0.01.tar.gz'
+	);
 
 =cut
 
