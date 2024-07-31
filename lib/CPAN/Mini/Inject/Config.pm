@@ -13,11 +13,64 @@ use File::Spec::Functions qw(rootdir catfile);
 
 CPAN::Mini::Inject::Config - Config for CPAN::Mini::Inject
 
+=head1 SYNOPSIS
+
+	my $config = CPAN::Mini::Inject::Config->new;
+
+=head1 DESCRIPTION
+
+=head2 Configuration
+
+This is the default class dealing with the default L<CPAN::Mini::Inject>
+config. The simplest config is a key-value file:
+
+	local: t/local/CPAN
+	remote : http://localhost:11027
+	repository: t/local/MYCPAN
+	dirmode: 0775
+	passive: yes
+
+This module digests that and returns it as a hash reference. Any module
+that wants to use a different sort of config structure needs to return
+the same hash:
+
+	{
+	local      => 't/local/CPAN',
+	remote     => 'http://localhost:11027',
+	repository => 't/local/MYCPAN',
+	dirmode    => '0775',
+	passive    => 'yes',
+	}
+
 =over 4
 
-=cut
+=item * local
 
-our $VERSION = '0.37';
+location to store local CPAN::Mini mirror (*REQUIRED*)
+
+=item * remote
+
+CPAN site(s) to mirror from. Multiple sites can be listed space separated.
+(*REQUIRED*)
+
+=item * repository
+
+Location to store modules to add to the local CPAN::Mini mirror.
+
+=item * passive
+
+Enable passive FTP.
+
+=item * dirmode
+
+Set the permissions of created directories to the specified mode. The default
+value is based on umask if supported.
+
+=back
+
+=head2 Methods
+
+=over 4
 
 =item C<new>
 
@@ -113,34 +166,6 @@ parsecfg expects the config file in the following format:
  passive: yes
  dirmode: 0755
 
-Description of options:
-
-=over 4
-
-=item * local
-
-location to store local CPAN::Mini mirror (*REQUIRED*)
-
-=item * remote
-
-CPAN site(s) to mirror from. Multiple sites can be listed space separated.
-(*REQUIRED*)
-
-=item * repository
-
-Location to store modules to add to the local CPAN::Mini mirror.
-
-=item * passive
-
-Enable passive FTP.
-
-=item * dirmode
-
-Set the permissions of created directories to the specified mode. The default
-value is based on umask if supported.
-
-=back
-
 If either local or remote are not defined parsecfg croaks.
 
 =cut
@@ -192,12 +217,6 @@ Sets the value for the named configuration directive.
 sub set { $_[0]->{ $_[1] } = $_[2] }
 
 =back
-
-=head1 BUGS
-
-Report issues to the GitHub queue at
-
-	https://github.com/briandfoy/cpan-mini-inject/issues
 
 =cut
 
