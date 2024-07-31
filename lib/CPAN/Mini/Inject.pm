@@ -3,7 +3,7 @@ package CPAN::Mini::Inject;
 use strict;
 use warnings;
 
-use CPAN::Checksums 2.13 qw( updatedir );
+use CPAN::Checksums 2.13;
 use CPAN::Mini;
 use CPAN::Mini::Inject::Config;
 use Carp;
@@ -12,44 +12,45 @@ use File::Basename;
 use File::Copy;
 use File::Path qw( make_path );
 use File::Spec;
+use File::Spec::Functions;
 use LWP::Simple;
 use Dist::Metadata ();
 
 BEGIN {
-	use version 0.9915;
-	use CPAN::Meta::Converter;
+  use version 0.9915;
+  use CPAN::Meta::Converter;
 
-	# This is here because the CPAN::Meta package has not been updated
-	# since 2016 and it's unlikely that they'd accept a patch for this.
-	# see https://github.com/briandfoy/cpan-mini-inject/issues/11
-	# and https://github.com/Perl-Toolchain-Gang/CPAN-Meta#138
-	package CPAN::Meta::Converter;
+  # This is here because the CPAN::Meta package has not been updated
+  # since 2016 and it's unlikely that they'd accept a patch for this.
+  # see https://github.com/briandfoy/cpan-mini-inject/issues/11
+  # and https://github.com/Perl-Toolchain-Gang/CPAN-Meta#138
+  package CPAN::Meta::Converter;
 
-	no warnings qw(redefine);
+  no warnings qw(redefine);
 
-	# lifted from CPAN::Meta::Converter
-	# https://fastapi.metacpan.org/source/DAGOLDEN/CPAN-Meta-2.150010/lib/CPAN/Meta/Converter.pm
-	sub _clean_version {
-	  my ($element) = @_;
-	  return 0 if ! defined $element;
+  # lifted from CPAN::Meta::Converter
+  # https://fastapi.metacpan.org/source/DAGOLDEN/CPAN-Meta-2.150010/lib/CPAN/Meta/Converter.pm
+  sub _clean_version {
+    my ($element) = @_;
+    return 0 if ! defined $element;
 
-	  $element =~ s{^\s*}{};
-	  $element =~ s{\s*$}{};
-	  $element =~ s{^\.}{0.};
+    $element =~ s{^\s*}{};
+    $element =~ s{\s*$}{};
+    $element =~ s{^\.}{0.};
 
-	  return 0 if ! length $element;
-	  return 0 if ( $element eq 'undef' || $element eq '<undef>' );
+    return 0 if ! length $element;
+    return 0 if ( $element eq 'undef' || $element eq '<undef>' );
 
-	  my $v = eval { version->parse($element) };
-	  # XXX check defined $v and not just $v because version objects leak memory
-	  # in boolean context -- dagolden, 2012-02-03
-	  if ( defined $v ) {
-		return _is_qv($v) ? $v->stringify : $element;
-	  }
-	  else {
-		return 0;
-	  }
-	}
+    my $v = eval { version->parse($element) };
+    # XXX check defined $v and not just $v because version objects leak memory
+    # in boolean context -- dagolden, 2012-02-03
+    if ( defined $v ) {
+    return _is_qv($v) ? $v->stringify : $element;
+    }
+    else {
+    return 0;
+    }
+  }
 }
 
 =encoding utf8
@@ -74,11 +75,11 @@ probably want to look at the L<mcpani> command instead.
     $mcpi->parsecfg('t/.mcpani/config');
 
     $mcpi->add(
-    	module   => 'CPAN::Mini::Inject',
-		authorid => 'SSORICHE',
-		version  => ' 0.01',
-		file     => 'mymodules/CPAN-Mini-Inject-0.01.tar.gz'
-	);
+      module   => 'CPAN::Mini::Inject',
+    authorid => 'SSORICHE',
+    version  => ' 0.01',
+    file     => 'mymodules/CPAN-Mini-Inject-0.01.tar.gz'
+  );
 
     $mcpi->writelist;
     $mcpi->update_mirror;
@@ -119,43 +120,57 @@ Create a new CPAN::Mini::Inject object.
 =cut
 
 sub new {
-  return bless
-   { config_class => 'CPAN::Mini::Inject::Config' },
-   $_[0];
+  my( $class, %args ) = @_;
+  my %defaults = (
+    config_class => $class->default_config_class,
+  );
+  my %allowed = map {
+    $_, 1
+  } qw(config_class);
+
+  my %filtered =
+    map { ($_, $args{$_}) }
+    grep { exists $allowed{$_} }
+    keys %args;
+
+
+  my %obj = ( %defaults, %filtered );
+  return bless \%obj, $class;
 }
 
 =item C<< config_class( [CLASS] ) >>
 
-Returns the name of the class handling the configuration.
-
-With an argument, it sets the name of the class to handle
-the config. To use that, you'll have to call it before you
-load the configuration.
+Returns the name of the class used to handle the configuration. Also
+see C<default_config_class>.
 
 =cut
 
 sub config_class {
   my $self = shift;
-
   if ( @_ ) { $self->{config_class} = shift }
-
   $self->{config_class};
 }
 
-=item C<< config >>
+=item C<< config( [HASHREF] ) >>
 
-Returns the configuration object. This object should be from
-the class returned by C<config_class> unless you've done something
-weird.
+With a hashref argument, sets the config data.
+
+Returns the current configuration hash.
 
 =cut
 
 sub config {
   my $self = shift;
-
   if ( @_ ) { $self->{config} = shift }
-
   $self->{config};
+}
+
+=item C<< default_config_class >>
+
+=cut
+
+sub default_config_class {
+  'CPAN::Mini::Inject::Config'
 }
 
 =item C<< loadcfg( [FILENAME] ) >>
@@ -325,11 +340,11 @@ C<add> will try to extract it from the distribution.
 =back
 
   $mcpani->add(
-  	module   => 'Module::Name',
-	authorid => 'SOMEAUTHOR',
-	version  => 0.01,
-	file     => './Module-Name-0.01.tar.gz'
-	);
+    module   => 'Module::Name',
+  authorid => 'SOMEAUTHOR',
+  version  => 0.01,
+  file     => './Module-Name-0.01.tar.gz'
+  );
 
 =cut
 
@@ -489,11 +504,11 @@ sub inject {
   }
 
   for my $dir ( keys( %updatedir ) ) {
-    my $root    = $self->config->get( 'local' ) . "/authors/id";
-    my $authdir = "$root/$dir";
+    my $root    = catfile( $self->config->get( 'local' ), qw(authors id) );
+    my $authdir = catfile( $root, $dir );
 
-    updatedir( $authdir, $root );
-    $self->_updperms( "$authdir/CHECKSUMS" );
+    CPAN::Checksums::updatedir( $authdir, $root );
+    $self->_updperms( catfile($authdir, 'CHECKSUMS') );
   }
 
   $self->updpackages;
@@ -796,7 +811,7 @@ Thanks to Jozef Kutej <jozef@kutej.net> for numerous patches.
 
 Report issues to the GitHub queue at
 
-	https://github.com/briandfoy/cpan-mini-inject/issues
+  https://github.com/briandfoy/cpan-mini-inject/issues
 
 =head1 COPYRIGHT AND LICENSE
 
