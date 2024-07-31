@@ -304,9 +304,9 @@ F<mcpani> will search the following four places in order:
 
 Shawn Sorichetti C<< <ssoriche@coloredblocks.net> >>
 
-=head1 BUGS
+=head1 ISSUES
 
-Report issues to the GitHub queue at
+Report issues to the GitHub queue:
 
 	https://github.com/briandfoy/cpan-mini-inject/issues
 
