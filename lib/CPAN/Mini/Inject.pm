@@ -213,8 +213,9 @@ sub parsecfg {
 
 =item C<< site( [SITE] ) >>
 
-Returns the CPAN site that CPAN::Mini::Inject chose from the
-list specified in the C<remote> directive.
+With an argument, set the site to use to contact CPAN. Returns the
+site setting, or, if the site has not be set (or was set to undef),
+returns the empty string.
 
 =cut
 
@@ -224,14 +225,15 @@ sub site {
 
   if ( @_ ) { $self->{site} = shift }
 
-  $self->{site} || '';
+  $self->{site} // '';
 }
 
 =item C<testremote>
 
-Test each site listed in the remote parameter of the config file by performing
-a get on each site in order for authors/01mailrc.txt.gz. The first site to
-respond successfully is set as the instance variable site.
+Test each site listed in the remote parameter of the config file by
+performing a get on each site in order for authors/01mailrc.txt.gz.
+The first site to respond successfully is set as the instance variable
+site.
 
  print "$mcpi->{site}\n"; # ftp://ftp.cpan.org/pub/CPAN
 
