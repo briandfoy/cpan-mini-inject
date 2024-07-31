@@ -52,6 +52,8 @@ BEGIN {
 	}
 }
 
+=encoding utf8
+
 =head1 NAME
 
 CPAN::Mini::Inject - Inject modules into a CPAN::Mini mirror.
