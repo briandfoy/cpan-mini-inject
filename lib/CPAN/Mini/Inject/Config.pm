@@ -1,3 +1,4 @@
+use v5.16;
 package CPAN::Mini::Inject::Config;
 
 use strict;
