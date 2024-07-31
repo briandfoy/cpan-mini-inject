@@ -1,3 +1,4 @@
+use v5.16; # from dependencies, so go for it.
 package CPAN::Mini::Inject;
 
 use strict;
