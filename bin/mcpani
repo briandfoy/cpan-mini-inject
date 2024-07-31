@@ -1,4 +1,5 @@
-#!/usr/bin/perl -w
+#!/usr/bin/perl
+use v5.16;
 
 use strict;
 use Pod::Usage 1.12;
