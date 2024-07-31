@@ -562,10 +562,7 @@ sub updauthors {
   AUTHOR:
   for my $modline ( @{ $self->{modulelist} } ) {
     my ( $module, $version, $file ) = split( /\s+/, $modline );
-
-    # extract the author from the path
-    my @dirs = File::Spec->splitdir( $file );
-    my $author = $dirs[2];
+    my $author = (File::Spec->splitdir( $file ))[2];
 
     next AUTHOR if defined $author_ids_in_repo{$author};
     next AUTHOR if defined $authors_added{$author};
