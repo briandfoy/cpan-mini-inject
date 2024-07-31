@@ -71,10 +71,12 @@ probably want to look at the L<mcpani> command instead.
     $mcpi=CPAN::Mini::Inject->new;
     $mcpi->parsecfg('t/.mcpani/config');
 
-    $mcpi->add( module   => 'CPAN::Mini::Inject',
-                authorid => 'SSORICHE',
-                version  => ' 0.01',
-                file     => 'mymodules/CPAN-Mini-Inject-0.01.tar.gz' )
+    $mcpi->add(
+    	module   => 'CPAN::Mini::Inject',
+		authorid => 'SSORICHE',
+		version  => ' 0.01',
+		file     => 'mymodules/CPAN-Mini-Inject-0.01.tar.gz'
+	);
 
     $mcpi->writelist;
     $mcpi->update_mirror;
