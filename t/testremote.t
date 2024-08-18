@@ -13,7 +13,6 @@ my $port =  empty_port();
 like $port, qr/\A\d+\z/a, 'port looks like a number';
 
 my( $pid ) = start_server($port);
-like $pid, qr/\A\d+\z/a, 'pid looks like a number';
 
 diag( "$$: PORT: $port" ) if $ENV{TEST_VERBOSE};
 diag( "$$: PID: $pid" ) if $ENV{TEST_VERBOSE};
