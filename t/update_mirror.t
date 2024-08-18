@@ -16,6 +16,13 @@ $SIG{'INT'} = sub { print "\nCleaning up before exiting\n"; exit 1 };
 my $tmp_dir = File::Temp::tempdir( CLEANUP => 1 );
 my $tmp_config_file;
 
+# some CPAN testers had problems with this
+unless( -w $tmp_dir ) {
+	diag("/tmp was not writeable, so not continuing");
+	pass();
+	exit;
+	}
+
 my $url;
 my $port;
 my $pid;
