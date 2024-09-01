@@ -20,7 +20,7 @@ diag( "$$: PID: $pid" ) if $ENV{TEST_VERBOSE};
 my $url = "http://localhost:$port/";
 
 my $available = 0;
-for( 1 .. 3 ) {
+foreach ( 1 .. 4 ) {
   my $sleep = $_ ** 2;
   sleep $sleep;
   diag("Sleeping $sleep seconds waiting for server") if $ENV{TEST_VERBOSE};
