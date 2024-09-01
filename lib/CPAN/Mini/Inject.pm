@@ -41,7 +41,6 @@ BEGIN {
 
     return 0 if ! length $element;
     return 0 if ( $element eq 'undef' || $element eq '<undef>' );
-
     my $v = eval { version->parse($element) };
     # XXX check defined $v and not just $v because version objects leak memory
     # in boolean context -- dagolden, 2012-02-03
@@ -62,7 +61,7 @@ CPAN::Mini::Inject - Inject modules into a CPAN::Mini mirror.
 
 =cut
 
-our $VERSION = '1.004_04';
+our $VERSION = '1.004_05';
 our @ISA     = qw( CPAN::Mini );
 
 =head1 SYNOPSIS
