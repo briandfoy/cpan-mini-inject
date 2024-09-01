@@ -36,7 +36,7 @@ subtest 'start local server' => sub {
 
 	$url = "http://localhost:$port/";
 
-	for( 1 .. 4 ) {
+	foreach ( 1 .. 4 ) {
 	  my $sleep = $_ * 2;
 	  sleep $sleep;
 	  diag("Sleeping $sleep seconds waiting for server") if $ENV{TEST_VERBOSE};
