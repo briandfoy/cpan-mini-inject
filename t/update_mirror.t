@@ -81,6 +81,12 @@ subtest 'testremote' => sub {
 subtest 'update mirror' => sub {
 	ok( -e $tmp_dir, 'mirror directory exists' );
 
+	# a couple of CPAN Testers have this problem.
+	unless( -w $tmp_dir ) {
+		diag( "temp dir is not writable? Skipping these tests" );
+		return;
+	}
+
 	ok can_fetch($url), "URL $url is available";
 
 	eval {
@@ -91,10 +97,15 @@ subtest 'update mirror' => sub {
 		  trace  => 1,
 		  log_level => 'info',
 		  );
-		} or print STDERR "update_mirror died: $@";
+		} or diag( "update_mirror died: $@" );
 	};
 
 subtest 'mirror state' => sub {
+	unless( -w $tmp_dir ) {
+		diag( "temp dir is not writable? Skipping these tests" );
+		return;
+	}
+
 	ok( -e catfile( $tmp_dir, qw(authors) ), 'authors/ exists' );
 	ok( -e catfile( $tmp_dir, qw(modules) ), 'modules/ exists' );
 	ok( -e catfile( $tmp_dir, qw(authors 01mailrc.txt.gz) ), '01mailrc.txt.gz exists' );
