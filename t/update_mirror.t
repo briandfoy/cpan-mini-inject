@@ -12,7 +12,8 @@ use lib 't/lib';
 use Local::localserver;
 use Local::utils;
 
-$SIG{'INT'} = sub { print "\nCleaning up before exiting\n"; exit 1 };
+# if either of these happen, we don't want the tests to fail.
+$SIG{'INT'} = $SIG{'TERM'} = sub { print "\nCleaning up before exiting\n"; done_testing(); exit };
 my $tmp_dir = File::Temp::tempdir( CLEANUP => 1 );
 my $tmp_config_file;
 

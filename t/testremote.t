@@ -7,7 +7,8 @@ use CPAN::Mini::Inject;
 use lib 't/lib';
 use Local::localserver;
 
-$SIG{'INT'} = sub { print "\nCleaning up before exiting\n"; exit 1 };
+# if either of these happen, we don't want the tests to fail.
+$SIG{'INT'} = $SIG{'TERM'} = sub { print "\nCleaning up before exiting\n"; done_testing(); exit 0 };
 
 my $port =  empty_port();
 like $port, qr/\A\d+\z/a, 'port looks like a number';
