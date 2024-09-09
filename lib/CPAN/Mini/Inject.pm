@@ -19,7 +19,8 @@ use Dist::Metadata ();
 
 BEGIN {
   use version 0.9915;
-  use CPAN::Meta::Converter;
+  use # hide from PAUSE
+  	CPAN::Meta::Converter;
 
   # This is here because the CPAN::Meta package has not been updated
   # since 2016 and it's unlikely that they'd accept a patch for this.
