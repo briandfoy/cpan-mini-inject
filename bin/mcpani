@@ -35,12 +35,12 @@ sub add {
 
   $mcpi->readlist;
 
-    $mcpi->add(
-      module   => $options{module},
-      authorid => $options{authorid},
-      version  => $options{version},
-      file     => $options{file}
-    );
+  $mcpi->add(
+    module   => $options{module},
+    authorid => $options{authorid},
+    version  => $options{version},
+    file     => $options{file}
+  );
 
   if ( $options{verbose} ) {
     my @added = $mcpi->added_modules;
