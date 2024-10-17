@@ -12,6 +12,7 @@ use File::Temp;
 
 our $VERSION = '0.38';
 our %options = ();
+our $mcpi;
 
 sub print_version {
   printf( "mcpani v%s, using CPAN::Mini::Inject v%s and Perl v%vd\n",
@@ -120,7 +121,7 @@ unless ( defined( $options{action} ) && chkactions() ) {
   exit;
 }
 
-my $mcpi = CPAN::Mini::Inject->new->loadcfg( $options{cfg} )->parsecfg;
+$mcpi = CPAN::Mini::Inject->new->loadcfg( $options{cfg} )->parsecfg;
 
 $CPAN::Checksums::SIGNING_KEY = $options{'signing_key'}
     if ($options{'signing_key'});
