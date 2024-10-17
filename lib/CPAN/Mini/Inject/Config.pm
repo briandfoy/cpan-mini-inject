@@ -128,8 +128,8 @@ sub load_config {
   return $cfgfile;
 }
 
-sub _find_config {
-  my ( @files ) = (
+sub _config_files {
+  my @files = (
     $ENV{MCPANI_CONFIG},
     (
       defined $ENV{HOME}
@@ -139,8 +139,10 @@ sub _find_config {
     catfile( rootdir(), qw(usr local etc mcpani) ),
     catfile( rootdir(), qw(etc mcpani) ),
   );
+}
 
-  for my $file ( @files ) {
+sub _find_config {
+  for my $file ( _config_files() ) {
     next unless defined $file;
     next unless -r $file;
 
