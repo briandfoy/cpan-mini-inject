@@ -118,9 +118,9 @@ none is found.
 =cut
 
 sub load_config {
-  my $self = shift;
+  my( $self, $file ) = @_;
 
-  my $cfgfile = shift || $self->_find_config;
+  my $cfgfile = $file || $self->_find_config;
 
   croak 'Unable to find config file' unless $cfgfile;
   $self->config_file( $cfgfile );
