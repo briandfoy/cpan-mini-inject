@@ -194,11 +194,11 @@ B<mcpani> will search the following four places in order:
 
 By default, B<mcpani> uses a simple configuration file in the following format:
 
- local: /www/CPAN
- remote: ftp://ftp.cpan.org/pub/CPAN ftp://ftp.kernel.org/pub/CPAN
- repository: /work/mymodules
- passive: yes
- dirmode: 0755
+  local: /www/CPAN
+  remote: ftp://ftp.cpan.org/pub/CPAN ftp://ftp.kernel.org/pub/CPAN
+  repository: /work/mymodules
+  passive: yes
+  dirmode: 0755
 
 =head2 Configuration options
 
