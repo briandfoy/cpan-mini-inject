@@ -36,9 +36,11 @@ sub add {
 
   $mcpi->readlist;
 
+  my $authorid = _authorid;
+
   $mcpi->add(
     module   => $options{module},
-    authorid => $options{authorid},
+    authorid => $authorid,
     version  => $options{version},
     file     => $options{file}
   );
@@ -57,8 +59,15 @@ sub add {
     }
   }
   $mcpi->writelist;
-
 }
+
+sub _authorid {
+  $options{authorid}
+    // $ENV{CPAN_MINI_INJECT_AUTHORID}
+    // $mcpi->config->get('authorid')
+    // die "No authorid found in --authorid, CPAN_MINI_INJECT_AUTHORID, or in config\n";
+}
+
 
 sub update {
   my $mcpi = shift;
