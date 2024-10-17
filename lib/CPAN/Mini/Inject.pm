@@ -72,7 +72,7 @@ probably want to look at the L<mcpani> command instead.
 
     use CPAN::Mini::Inject;
 
-    $mcpi=CPAN::Mini::Inject->new;
+    $mcpi = CPAN::Mini::Inject->new;
     $mcpi->parsecfg('t/.mcpani/config');
 
     $mcpi->add(
