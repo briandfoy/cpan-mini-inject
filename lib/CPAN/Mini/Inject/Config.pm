@@ -44,7 +44,7 @@ the same hash:
 
 =over 4
 
-=item C<default_authorid>
+=item * default_authorid
 
 The authorid to use if you don't specify one with C<--add>.
 
