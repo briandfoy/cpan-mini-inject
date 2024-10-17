@@ -2,13 +2,16 @@
 use v5.16;
 
 use strict;
-use Pod::Usage 1.12;
-use Getopt::Long;
-use YAML qw( Load );
+use subs qw(verbose);
+
 use CPAN::Mini::Inject;
 use Env;
 use File::Slurp 'write_file';
+use File::Spec::Functions qw(rootdir catfile);
 use File::Temp;
+use Getopt::Long;
+use Pod::Usage 1.12;
+use YAML qw( Load );
 
 our $VERSION = '0.38';
 our %options = ();
