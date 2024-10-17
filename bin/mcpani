@@ -13,7 +13,6 @@ use Getopt::Long;
 use Pod::Usage 1.12;
 
 our $VERSION = '0.38';
-our %options = ();
 our $mcpi;
 
 sub print_version {
