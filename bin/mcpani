@@ -15,6 +15,13 @@ use Pod::Usage 1.12;
 our $VERSION = '0.38';
 our $mcpi;
 
+$|++;
+{
+my $old = select(STDERR);
+$|++;
+select($old);
+}
+
 sub print_version {
   printf( "mcpani v%s, using CPAN::Mini::Inject v%s and Perl v%vd\n",
     $VERSION, $CPAN::Mini::Inject::VERSION, $^V );
