@@ -143,9 +143,9 @@ sub process_options {
 
   Getopt::Long::GetOptionsFromArray(
     \@args,
-    'h|help|?'          => sub { pod2usage( { -verbose => 1, -input => \*DATA } ); exit },
-    'H|man'             => sub { pod2usage( { -verbose => 2, -input => \*DATA } ); exit },
-    'V|version'         => sub { print_version(); exit; },
+    'h|help|?'          => \$options{short_help},
+    'H|man'             => \$options{long_help},
+    'V|version'         => \$options{print_version},
 
     'add'               => \$options{add},
     'update'            => \$options{update},
@@ -167,15 +167,41 @@ sub process_options {
     'v|verbose'         => \$options{verbose},
   ) or return;
 
+  return \%options;
+}
+
+sub short_help {
+  pod2usage( { -verbose => 1, -input => \*DATA } );
+}
+
+sub long_help {
+  pod2usage( { -verbose => 2, -input => \*DATA } );
+}
+
+sub run {
+  my @args = @_;
+  my $options = process_options(@args);
+
   *verbose = $options{verbose} ? sub { print @_ } : sub { 1 };
+
+  unless( defined $options ) {
+    short_help();
+    return 2;
+  }
+
+  foreach my $k ( qw(version short_help long_help) ) {
+    next unless $options->{$k};
+    &{ $k }();
+    return 0;
+  }
 
   my @actions = grep { $options{$_} } qw(add inject update mirror show);
   if( @actions > 1 ) {
     verbose( "Found more than one action: @actions\n" );
-    return;
+    return 2;
   } elsif ( @actions == 0 ) {
     verbose( "Did not find an action. Nothing to do.\n" );
-    return;
+    return 2;
   } else {
     my %actions_map = (
       add    => \&add,
@@ -189,22 +215,10 @@ sub process_options {
     $options{'action'} = $actions_map{ $actions[0] };
   }
 
-  return \%options;
-}
-
-sub run {
-  my @args = @_;
-  my $options = process_options(@args);
-
-  unless( defined $options ) {
-    print STDERR "Could not process options. Exiting.\n";
-    exit 2;
-  }
-
   my $config_file = $options->{config_file} //  CPAN::Mini::Inject::Config->_find_config;
   verbose "Using config file <$config_file>\n";
 
-  $mcpi = CPAN::Mini::Inject->new->loadcfg( $config_file )->parsecfg;
+  my $mcpi = CPAN::Mini::Inject->new->loadcfg( $config_file )->parsecfg;
 
   $CPAN::Checksums::SIGNING_KEY = $options->{'signing_key'}
       if ($options->{'signing_key'});
@@ -212,7 +226,7 @@ sub run {
   &{ $options->{action} }( $mcpi, $options );
 }
 
-run(@ARGV) unless caller;
+exit(run(@ARGV) // 0) unless caller;
 
 __END__
 
