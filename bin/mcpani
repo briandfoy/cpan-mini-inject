@@ -11,7 +11,6 @@ use File::Spec::Functions qw(rootdir catfile);
 use File::Temp;
 use Getopt::Long;
 use Pod::Usage 1.12;
-use YAML qw( Load );
 
 our $VERSION = '0.38';
 our %options = ();
