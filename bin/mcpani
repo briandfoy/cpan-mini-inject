@@ -27,33 +27,29 @@ sub print_version {
     $VERSION, $CPAN::Mini::Inject::VERSION, $^V );
 }
 
-sub chkactions {
-  for my $action ( qw(add update mirror inject) ) {
-    return 1 if ( $options{actionname} eq $action );
-  }
-  return 0;
-}
-
-sub setsub {
-  $options{actionname} = shift;
-  $options{action}     = shift;
+sub _authorid {
+  my($options) = @_;
+  $options->{authorid}
+    // $ENV{CPAN_MINI_INJECT_AUTHORID}
+    // $mcpi->config->get('authorid')
+    // die "No authorid found in --authorid, CPAN_MINI_INJECT_AUTHORID, or in config\n";
 }
 
 sub add {
-  my $mcpi = shift;
+  my($mcpi, $options) = @_;
 
   $mcpi->readlist;
 
-  my $authorid = _authorid;
+  my $authorid = _authorid();
 
   $mcpi->add(
-    module   => $options{module},
+    module   => $options->{module},
     authorid => $authorid,
-    version  => $options{version},
-    file     => $options{file}
+    version  => $options->{version},
+    file     => $options->{file}
   );
 
-  if ( $options{verbose} ) {
+  if ( $options->{verbose} ) {
     my @added = $mcpi->added_modules;
     foreach my $added ( @added ){
       print "\nAdding File: $added->{file}\n";
@@ -69,81 +65,154 @@ sub add {
   $mcpi->writelist;
 }
 
-sub _authorid {
-  $options{authorid}
-    // $ENV{CPAN_MINI_INJECT_AUTHORID}
-    // $mcpi->config->get('authorid')
-    // die "No authorid found in --authorid, CPAN_MINI_INJECT_AUTHORID, or in config\n";
-}
+sub inject {
+  my($mcpi, $options) = @_;
 
-
-sub update {
-  my $mcpi = shift;
-
-  mirror( $mcpi );
-  inject( $mcpi );
+  printf "Injecting modules from %s\n", $mcpi->config->get('repository')
+   if $options->{verbose};
+  $mcpi->inject( $options->{verbose} );
 }
 
 sub mirror {
-  my $mcpi = shift;
+  my($mcpi, $options) = @_;
   my %mirroropts;
 
-  $mirroropts{remote} = $options{remote}
-   if ( defined( $options{remote} ) );
-  $mirroropts{local} = $options{local}
-   if ( defined( $options{local} ) );
-  $mirroropts{trace} = $options{verbose}
-   if ( defined( $options{verbose} ) );
+  $mirroropts{remote} = $options->{remote}  if defined $options->{remote};
+  $mirroropts{local}  = $options->{local}   if defined $options->{local};
+  $mirroropts{trace}  = $options->{verbose} if defined $options->{verbose};
 
   $mcpi->update_mirror( %mirroropts );
 }
 
-sub inject {
-  my $mcpi = shift;
+sub show {
+  my($mcpi, $options) = @_;
 
-  print "Injecting modules from $mcpi->{config}{repository}\n"
-   if ( $options{verbose} );
-  $mcpi->inject( $options{verbose} );
+  my %config = %{ $mcpi->{config} };
+  my $file = delete $config{file};
+
+  print do {
+    if( length $options->{config_file} ) {
+      "--config is <$options->{config_file}> (will not search for other files)\n";
+    } else {
+      "--config is  is not set\n";
+    }
+  };
+    print do {
+    if( length $ENV{MCPANI_CONFIG} ) {
+      "MCPANI_CONFIG is <$ENV{MCPANI_CONFIG}>\n";
+    } else {
+      "MCPANI_CONFIG is not set\n";
+    }
+  };
+
+  my @files = map {
+    my @attrs;
+    push @attrs, -e ? 'exists' : 'not found';
+
+    if ( -e _ ) {
+      push @attrs, -r _ ? 'readable' : 'not readable';
+      push @attrs, 'plain file' if -f _;
+      push @attrs, 'directory' if -d _;
+    }
+    sprintf "%s (%s)", $_, join ", ", @attrs;
+    } grep {length} ($options->{config}, CPAN::Mini::Inject::Config->_config_files);
+
+  print join "\n    ", "config file search path is:", grep {length} @files;
+  print "\n";
+
+  print "mcpani config from <$file>\n";
+  my( $longest ) = sort { $b <=> $a } map { length $_ } keys %config;
+  foreach my $field ( sort keys %config ) {
+    printf "    %-${longest}s %s\n", $field, $config{$field};
+  }
 }
 
-# MAIN
-Getopt::Long::Configure( 'no_ignore_case' );
-Getopt::Long::Configure( 'bundling' );
+sub update {
+  my($mcpi, $options) = @_;
 
-GetOptions(
-  'h|help|?' =>
-   sub { pod2usage( { -verbose => 1, -input => \*DATA } ); exit },
-  'H|man' =>
-   sub { pod2usage( { -verbose => 2, -input => \*DATA } ); exit },
-  'V|version' => sub { print_version(); exit; },
-  'v|verbose' => \$options{verbose},
-  'l|local=s' => \$options{local},
-  'r|remote=s'   => \$options{remote},
-  'p|passive'    => \$ENV{FTP_PASSIVE},
-  'add'          => sub { setsub( 'add', \&add ) },
-  'update'       => sub { setsub( 'update', \&update ) },
-  'mirror'       => sub { setsub( 'mirror', \&mirror ) },
-  'inject'       => sub { setsub( 'inject', \&inject ) },
-  'module=s'     => \$options{module},
-  'authorid=s'   => \$options{authorid},
-  'modversion=s' => \$options{version},
-  'file=s'       => \$options{file},
-  'all-in-meta'  => \$options{'all-in-meta'},
-  'signing-key=s' => \$options{'signing_key'},
-  'discover-packages' => \$options{'discover-packages'},
-) or exit 1;
-
-unless ( defined( $options{action} ) && chkactions() ) {
-  pod2usage( { -verbose => 1, -input => \*DATA } );
-  exit;
+  mirror( $mcpi, $options );
+  inject( $mcpi, $options );
 }
 
-$mcpi = CPAN::Mini::Inject->new->loadcfg( $options{cfg} )->parsecfg;
+sub process_options {
+  my @args = @_;
+  my %options;
 
-$CPAN::Checksums::SIGNING_KEY = $options{'signing_key'}
-    if ($options{'signing_key'});
+  Getopt::Long::Configure( 'no_ignore_case' );
+  Getopt::Long::Configure( 'bundling' );
 
-&{ $options{action} }( $mcpi );
+  Getopt::Long::GetOptionsFromArray(
+    \@args,
+    'h|help|?'          => sub { pod2usage( { -verbose => 1, -input => \*DATA } ); exit },
+    'H|man'             => sub { pod2usage( { -verbose => 2, -input => \*DATA } ); exit },
+    'V|version'         => sub { print_version(); exit; },
+
+    'add'               => \$options{add},
+    'update'            => \$options{update},
+    'mirror'            => \$options{mirror},
+    'inject'            => \$options{inject},
+    'show'              => \$options{show},
+
+    'all-in-meta'       => \$options{'all-in-meta'},
+    'authorid=s'        => \$options{authorid},
+    'c|config=s'        => \$options{config_file},
+    'discover-packages' => \$options{'discover-packages'},
+    'file=s'            => \$options{file},
+    'l|local=s'         => \$options{local},
+    'module=s'          => \$options{module},
+    'modversion=s'      => \$options{version},
+    'p|passive'         => \$ENV{FTP_PASSIVE},
+    'r|remote=s'        => \$options{remote},
+    'signing-key=s'     => \$options{'signing_key'},
+    'v|verbose'         => \$options{verbose},
+  ) or return;
+
+  *verbose = $options{verbose} ? sub { print @_ } : sub { 1 };
+
+  my @actions = grep { $options{$_} } qw(add inject update mirror show);
+  if( @actions > 1 ) {
+    verbose( "Found more than one action: @actions\n" );
+    return;
+  } elsif ( @actions == 0 ) {
+    verbose( "Did not find an action. Nothing to do.\n" );
+    return;
+  } else {
+    my %actions_map = (
+      add    => \&add,
+      update => \&update,
+      mirror => \&mirror,
+      inject => \&inject,
+      show   => \&show,
+    );
+
+    $options{'actionname'} = $actions[0];
+    $options{'action'} = $actions_map{ $actions[0] };
+  }
+
+  return \%options;
+}
+
+sub run {
+  my @args = @_;
+  my $options = process_options(@args);
+
+  unless( defined $options ) {
+    print STDERR "Could not process options. Exiting.\n";
+    exit 2;
+  }
+
+  my $config_file = $options->{config_file} //  CPAN::Mini::Inject::Config->_find_config;
+  verbose "Using config file <$config_file>\n";
+
+  $mcpi = CPAN::Mini::Inject->new->loadcfg( $config_file )->parsecfg;
+
+  $CPAN::Checksums::SIGNING_KEY = $options->{'signing_key'}
+      if ($options->{'signing_key'});
+
+  &{ $options->{action} }( $mcpi, $options );
+}
+
+run(@ARGV) unless caller;
 
 __END__
 
