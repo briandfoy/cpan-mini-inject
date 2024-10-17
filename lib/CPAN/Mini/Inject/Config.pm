@@ -44,9 +44,22 @@ the same hash:
 
 =over 4
 
+=item C<default_authorid>
+
+The authorid to use if you don't specify one with C<--add>.
+
+=item * dirmode
+
+Set the permissions of created directories to the specified mode. The default
+value is based on umask if supported.
+
 =item * local
 
 location to store local CPAN::Mini mirror (*REQUIRED*)
+
+=item * passive
+
+Enable passive FTP.
 
 =item * remote
 
@@ -56,15 +69,6 @@ CPAN site(s) to mirror from. Multiple sites can be listed space separated.
 =item * repository
 
 Location to store modules to add to the local CPAN::Mini mirror.
-
-=item * passive
-
-Enable passive FTP.
-
-=item * dirmode
-
-Set the permissions of created directories to the specified mode. The default
-value is based on umask if supported.
 
 =back
 
