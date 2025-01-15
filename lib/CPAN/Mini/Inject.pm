@@ -284,9 +284,9 @@ sub update_mirror {
 
   $ENV{FTP_PASSIVE} = 1 if $self->config->get( 'passive' );
 
-  $options{local}     ||= $self->config->get( 'local' );
-  $options{trace}     ||= 0;
-  $options{skip_perl} ||= $self->config->get( 'perl' ) || 1;
+  $options{local}        ||= $self->config->get( 'local' );
+  $options{trace}        ||= 0;
+  $options{skip_perl}    ||= $self->config->get( 'perl' ) || 1;
   $options{skip_cleanup} ||= $self->config->get( 'skip_cleanup' ) || 0;
 
   $self->testremote( $options{trace} )
