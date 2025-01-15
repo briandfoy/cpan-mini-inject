@@ -290,9 +290,9 @@ sub update_mirror {
   $options{skip_cleanup} ||= $self->config->get( 'skip_cleanup' ) || 0;
 
   # module_filters, log_level, and force
-  my @extra = grep { defined $mcpani->config->get($_) } qw(module_filters log_level force);
+  my @extra = grep { defined $self->config->get($_) } qw(module_filters log_level force);
 
-  $options{$_} = $mcpani->config->get($_) for @extra;
+  $options{$_} = $self->config->get($_) for @extra;
 
   $self->testremote( $options{trace} )
    unless ( $self->site || $options{remote} );
