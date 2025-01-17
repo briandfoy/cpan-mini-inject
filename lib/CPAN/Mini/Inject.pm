@@ -19,14 +19,14 @@ use Dist::Metadata ();
 
 BEGIN {
   use version 0.9915;
-  use # hide from PAUSE
-  	CPAN::Meta::Converter;
+  use CPAN::Meta::Converter;
 
   # This is here because the CPAN::Meta package has not been updated
   # since 2016 and it's unlikely that they'd accept a patch for this.
   # see https://github.com/briandfoy/cpan-mini-inject/issues/11
   # and https://github.com/Perl-Toolchain-Gang/CPAN-Meta#138
-  package CPAN::Meta::Converter;
+  package # hide from PAUSE
+    CPAN::Meta::Converter;
 
   no warnings qw(redefine);
 
