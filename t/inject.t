@@ -142,6 +142,32 @@ subtest 'inject the modules' => sub {
 		ok $mcpi->inject( $ENV{TEST_VERBOSE} // 0 ), 'copy modules';
 		};
 
+	subtest 'packages' => sub {
+		my $packages = catfile $temp_dir, 'modules', '02packages.details.txt.gz';
+		ok -e $packages, '02packages exists';
+		my $gz = gzopen($packages, 'rb');
+
+		my $line;
+		my $expected_lines;
+		HEADER: while( $gz->gzreadline($line) > 0 ) {
+			last HEADER if $line eq "\n";
+			my $rc = like $line, qr/\A ([a-z-]+) : \x{20}+ (.*)/ix, 'header format is correct';
+			if( $line =~ m/\A ([a-z-]+) : \x{20}+ (.*)/ix and $1 eq 'Line-Count') {
+				$expected_lines = $2;
+				}
+			}
+
+		my $count = 0;
+		PACKAGES: while( $gz->gzreadline($line) > 0 ) {
+			$count++;
+			chomp($line);
+			my( $module, $version, $path ) = split /\s+/, $line;
+			like $module, qr/\A [A-Za-z0-9_]+ (:: [A-Za-z0-9_]+ )* \z/x, 'module name matches';
+			}
+
+		is $count, $expected_lines, 'Line-Count matches lines';
+		};
+
 	subtest 'check the result' => sub {
 		my $authors_dir = catfile $temp_dir, 'authors';
 		ok -e $authors_dir, 'authors dir exists';
