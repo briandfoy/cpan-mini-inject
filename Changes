@@ -1,5 +1,10 @@
 Revision history for CPAN-Mini-Inject
 
+1.009_01 2025-02-01T18:02:55Z
+	* create 02packages as a temp file first, then move it into place.
+	This is one of probably many problems with running several mcpani
+	processes at the same time (#18)
+
 1.008 2025-01-17T13:45:32Z
 	* Fix indexing problem while not hiding CPAN::Meta::Convertor
 	correctly.
