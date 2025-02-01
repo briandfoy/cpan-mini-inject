@@ -14,6 +14,7 @@ use File::Copy;
 use File::Path qw( make_path );
 use File::Spec;
 use File::Spec::Functions;
+use File::Temp qw(tempfile);
 use LWP::Simple;
 use Dist::Metadata ();
 
@@ -720,36 +721,40 @@ sub _readpkgs {
 }
 
 sub _writepkgs {
-  my $self = shift;
-  my $pkgs = shift;
+  my( $self, $pkgs ) = @_;
 
-  my $gzwrite = gzopen(
-    $self->config->get( 'local' )
-     . '/modules/02packages.details.txt.gz', 'wb'
-   )
-   or croak
-   "Can't open local 02packages.details.txt.gz for writing: $gzerrno";
+  my $dest = catfile(
+    $self->config->get( 'local' ),
+    'modules',
+    '02packages.details.txt.gz'
+  );
 
-  $gzwrite->gzwrite( "File:         02packages.details.txt\n" );
-  $gzwrite->gzwrite(
-    "URL:          http://www.perl.com/CPAN/modules/02packages.details.txt\n"
+  my($fh, $temp_filename) = tempfile();
+
+  my $gzwrite = gzopen($fh, 'wb')
+   or croak "Can't open local 02packages.details.txt.gz for writing: $gzerrno";
+
+  my @headers = (
+    [ 'File'         => '02packages.details.txt'                                  ],
+    [ 'URL'          => 'http://www.perl.com/CPAN/modules/02packages.details.txt' ],
+    [ 'Description'  => 'Package names found in directory $CPAN/authors/id/'      ],
+    [ 'Columns'      => 'package name, version, path'                             ],
+    [ 'Intended-For' => 'Automated fetch routines, namespace documentation.'      ],
+    [ 'Written-By'   => "CPAN::Mini::Inject $VERSION"                             ],
+    [ 'Line-Count'   => scalar( @$pkgs )                                          ],
+    [ 'Last-Updated' => _fmtdate()                                                ],
   );
-  $gzwrite->gzwrite(
-    'Description:  Package names found in directory $CPAN/authors/id/'
-     . "\n" );
-  $gzwrite->gzwrite( "Columns:      package name, version, path\n" );
-  $gzwrite->gzwrite(
-    "Intended-For: Automated fetch routines, namespace documentation.\n"
-  );
-  $gzwrite->gzwrite( "Written-By:   CPAN::Mini::Inject $VERSION\n" );
-  $gzwrite->gzwrite( "Line-Count:   " . scalar( @$pkgs ) . "\n" );
-  # Last-Updated: Sat, 19 Mar 2005 19:49:10 GMT
-  $gzwrite->gzwrite( "Last-Updated: " . _fmtdate() . "\n\n" );
+
+  foreach my $header ( @headers ) {
+    $gzwrite->gzwrite(sprintf "%-13s %s\n", $header->[0] . ':', $header->[1]);
+  }
+  $gzwrite->gzwrite("\n");
 
   $gzwrite->gzwrite( "$_\n" ) for ( @$pkgs );
 
   $gzwrite->gzclose;
 
+  copy( $temp_filename, $dest ) or croak "copying 02packages failed: $!";
 }
 
 sub _readauthors {
