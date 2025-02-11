@@ -1,3 +1,12 @@
+use Test::More;
+BEGIN {
+my @needs = grep { ! eval "require $_; 1" } qw(HTTP::Daemon Net::EmptyPort);
+
+if( @needs ) {
+	plan 'skip_all' => "Local::localversion needs " . join ' and ', @needs;
+	}
+}
+
 use File::Spec::Functions qw(catfile);
 use Net::EmptyPort;
 
