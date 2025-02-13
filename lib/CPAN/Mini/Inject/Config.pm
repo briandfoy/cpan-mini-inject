@@ -44,27 +44,50 @@ the same hash:
 
 =over 4
 
+=item * dirmode
+
+Set the permissions of created directories to the specified mode. The default
+value is based on umask if supported.
+
+=item * force
+
+passthrough to L<CPAN::Mini>.
+
 =item * local
 
-location to store local CPAN::Mini mirror (*REQUIRED*)
+(required) location to store local CPAN::Mini mirror
 
-=item * remote
+=item * log_level
 
-CPAN site(s) to mirror from. Multiple sites can be listed space separated.
-(*REQUIRED*)
+passthrough to L<CPAN::Mini>
 
-=item * repository
+=item * module_filters
 
-Location to store modules to add to the local CPAN::Mini mirror.
+passthrough to L<CPAN::Mini>
 
 =item * passive
 
 Enable passive FTP.
 
-=item * dirmode
+=item * remote
 
-Set the permissions of created directories to the specified mode. The default
-value is based on umask if supported.
+(required) CPAN site(s) to mirror from. Multiple sites can be listed space separated.
+
+=item * repository
+
+Location to store modules to add to the local CPAN::Mini mirror.
+
+=item * skip_cleanup
+
+passthrough to L<CPAN::Mini>
+
+=item * skip_perl
+
+passthrough to L<CPAN::Mini>
+
+=item * trace
+
+passthrough to L<CPAN::Mini>
 
 =back
 
