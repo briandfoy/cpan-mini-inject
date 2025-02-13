@@ -122,7 +122,7 @@ sub load_config {
 
   my $cfgfile = shift || $self->_find_config;
 
-  croak 'Unable to find config file' unless $cfgfile;
+  croak "$0: unable to find config file" unless $cfgfile;
   $self->config_file( $cfgfile );
 
   return $cfgfile;
