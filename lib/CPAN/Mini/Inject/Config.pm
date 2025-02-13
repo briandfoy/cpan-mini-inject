@@ -184,9 +184,13 @@ sub parse_config {
 
     while ( <$fh> ) {
       next if /^\s*#/;
+      chomp;
       if( /^\s*([^:\s]+)\s*:\s*(.*?)\s*$/ ) {
       	$self->{$1} = $2;
       	delete $required{$1} if defined $required{$1};
+      } else {
+      	carp sprintf "%s:%d ignoring invalid configuration line: %s\n",
+      		$self->config_file, $., $_;
       }
     }
 
