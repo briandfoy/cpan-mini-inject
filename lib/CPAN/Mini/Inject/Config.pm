@@ -160,7 +160,7 @@ creates a hash in config with each setting.
 parsecfg expects the config file in the following format:
 
  local: /www/CPAN
- remote: ftp://ftp.cpan.org/pub/CPAN ftp://ftp.kernel.org/pub/CPAN
+ remote: http://cpan.metacpan.org/
  repository: /work/mymodules
  passive: yes
  dirmode: 0755
