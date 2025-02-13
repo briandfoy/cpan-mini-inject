@@ -63,6 +63,7 @@ HERE
 
 		my $mcpi = $class->new;
 		isa_ok $mcpi, $class;
+		local $SIG{__WARN__} = sub {1}; # suppress warning about "This line will be ignored"
 		dies_ok { $mcpi->parsecfg( $tmp_config_file ); } 'Missing local setting blows up';
 		};
 
