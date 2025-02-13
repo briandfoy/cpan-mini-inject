@@ -265,7 +265,7 @@ sub testremote {
     }
   }
 
-  croak "Unable to connect to any remote site" unless $self->site;
+  croak "$0: unable to connect to any remote site" unless $self->site;
 
   return $self;
 }
@@ -280,8 +280,8 @@ sub update_mirror {
   my $self    = shift;
   my %options = @_;
 
-  croak 'Can not write to local: ' . $self->config->get( 'local' )
-   unless ( -w $self->config->get( 'local' ) );
+  croak sprintf "$0: local directory <%s> is not writable. Cannot update mirror.", $self->config->get( 'local' )
+    unless -w $self->config->get('local');
 
   $ENV{FTP_PASSIVE} = 1 if $self->config->get( 'passive' );
 
@@ -364,14 +364,13 @@ sub add {
   my $optionchk
    = _optionchk( \%options, qw/authorid file/ );
 
-  croak "Required option not specified: $optionchk" if $optionchk;
-  croak "No repository configured"
-   unless ( $self->config->get( 'repository' ) );
-  croak "Can not write to repository: "
-   . $self->config->get( 'repository' )
-   unless ( -w $self->config->get( 'repository' ) );
+  croak "$0: required option not specified: $optionchk" if $optionchk;
+  croak "$0: no repository configured"
+    unless $self->config->get( 'repository' );
+  croak sprintf "$0: cannot write to repository <%s>", $self->config->get( 'repository' )
+    unless -w $self->config->get( 'repository' );
 
-  croak "Can not read module file: $options{file}"
+  croak "$0: cannot read module file: $options{file}"
    unless -r $options{file};
 
   # attempt to guess module and version
@@ -385,10 +384,9 @@ sub add {
 
   # if no packages were found we need explicit options
   if ( !keys %$packages ) {
-    $optionchk
-     = _optionchk( \%options, qw/module version/ );
+    $optionchk  = _optionchk( \%options, qw/module version/ );
 
-    croak "Required option not specified and no modules were found: $optionchk"
+    croak "$0: required option not specified and no modules were found: $optionchk"
      if $optionchk;
   }
 
@@ -406,7 +404,7 @@ sub add {
    . basename( $options{file} );
 
   copy( $options{file}, dirname( $target ) )
-   or croak "Copy failed: $!";
+    or croak "$0: copy failed while adding disribution from <%s> to <%s>: $!", $options{file}, dirname( $target );
 
   $self->_updperms( $target );
 
@@ -494,7 +492,7 @@ sub inject {
     my $tdir = dirname $target;
     _make_path( $tdir, defined $dirmode ? { mode => $dirmode } : {} );
     copy( $source, $tdir )
-     or croak "Copy $source to $tdir failed: $!";
+     or croak sprintf "$0: copy failed while injecting <%s> to <%s>: $!", $source, $tdir;
 
     $self->_updperms( $target );
   }
@@ -606,7 +604,7 @@ sub readlist {
   my $ml = $self->_modulelist;
   return $self unless -e $ml;
 
-  open MODLIST, '<', $ml or croak "Can not read module list: $ml ($!)";
+  open MODLIST, '<', $ml or croak "$0: cannot read module list: $ml ($!)";
   while ( <MODLIST> ) {
     chomp;
     push @{ $self->{modulelist} }, $_;
@@ -625,23 +623,24 @@ Write to the repository modulelist.
 sub writelist {
   my $self = shift;
 
-  croak 'Can not write module list: '
-   . $self->config->get( 'repository' )
-   . "/modulelist ERROR: $!"
-   unless ( -w $self->{config}{repository} . '/modulelist'
-    || -w $self->{config}{repository} );
-  return $self unless defined( $self->{modulelist} );
+  my $modulelist_file = $self->_repo_file( 'modulelist' );
 
-  open( MODLIST,
-    '>' . $self->config->get( 'repository' ) . '/modulelist' );
+  croak "$0: repository dir <%s> is not writable", $self->config->get( 'repository' )
+  	unless -w $self->config->get( 'repository' );
+  croak "$0: modulelist file <%s> is not writable", $modulelist_file
+  	if( -e $modulelist_file and ! -w _ );
+
+  return $self unless defined $self->{modulelist};
+
+  open my $fh, '>', $modulelist_file
+  	or croak sprintf "$0: modulelist file <%s> cannot be opened for writing: %s", $modulelist_file, $!;
   for ( sort( @{ $self->{modulelist} } ) ) {
     chomp;
-    print MODLIST "$_\n";
+    print {$fh} "$_\n";
   }
-  close( MODLIST );
+  close $fh;
 
-  $self->_updperms(
-    $self->config->get( 'repository' ) . '/modulelist' );
+  $self->_updperms( $modulelist_file );
 
   return $self;
 }
@@ -696,11 +695,17 @@ sub _cfg { $_[0]->{config}{ $_[1] } }
 
 sub _readpkgs {
   my $self = shift;
+  my $file = catfile( $self->config->get( 'local' ), 'modules', _packages_file() );
 
-  my $gzread = gzopen(
-    $self->config->get( 'local' )
-     . '/modules/02packages.details.txt.gz', 'rb'
-  ) or croak "Cannot open local 02packages.details.txt.gz: $gzerrno";
+  unless( -e $file ) {
+  	carp sprintf "$0: <%s> does not exist; starting with empty list of packages\n", $file;
+  	return [];
+  }
+
+  my $gzread = gzopen( $file, 'rb' ) or do {
+    carp sprintf "$0: cannot open <%s>: <%s>; starting with empty list of packages\n", $file, $gzerrno;
+    return []
+  };
 
   my $inheader = 1;
   my @packages;
@@ -720,23 +725,25 @@ sub _readpkgs {
   return \@packages;
 }
 
+sub _packages_file { '02packages.details.txt.gz' }
 sub _writepkgs {
   my( $self, $pkgs ) = @_;
 
-  my $dest = catfile(
-    $self->config->get( 'local' ),
-    'modules',
-    '02packages.details.txt.gz'
-  );
+  my $dir = catfile( $self->config->get('local'), 'modules' );
+  my $created = () = make_path $dir;
+  unless( -d $dir ) {
+  	croak sprintf "$0: directory <%s> does not exist. Cannot continue", $dir;
+  }
 
   my($fh, $temp_filename) = tempfile();
 
   my $gzwrite = gzopen($fh, 'wb')
-   or croak "Can't open local 02packages.details.txt.gz for writing: $gzerrno";
+   or croak sprintf "$0: cannot open local temp file to create <%s>: $gzerrno", _packages_file();
 
+  my $unzipped_file = _packages_file() =~ s/\.gz\z//r;
   my @headers = (
-    [ 'File'         => '02packages.details.txt'                                  ],
-    [ 'URL'          => 'http://www.perl.com/CPAN/modules/02packages.details.txt' ],
+    [ 'File'         =>  $unzipped_file                                           ],
+    [ 'URL'          => 'http://www.perl.com/CPAN/modules/' . $unzipped_file      ],
     [ 'Description'  => 'Package names found in directory $CPAN/authors/id/'      ],
     [ 'Columns'      => 'package name, version, path'                             ],
     [ 'Intended-For' => 'Automated fetch routines, namespace documentation.'      ],
@@ -749,22 +756,31 @@ sub _writepkgs {
     $gzwrite->gzwrite(sprintf "%-13s %s\n", $header->[0] . ':', $header->[1]);
   }
   $gzwrite->gzwrite("\n");
-
   $gzwrite->gzwrite( "$_\n" ) for ( @$pkgs );
-
   $gzwrite->gzclose;
 
-  copy( $temp_filename, $dest ) or croak "copying 02packages failed: $!";
+  my $dest = catfile( $dir, _packages_file() );
+  copy( $temp_filename, $dest ) or croak "$0: copying $dest failed: $!";
 }
 
 sub _readauthors {
   my $self = shift;
-  my $gzread
-   = gzopen( $self->config->get( 'local' ) . '/authors/01mailrc.txt.gz',
-    'rb' )
-   or croak "Cannot open "
-   . $self->config->get( 'local' )
-   . "/authors/01mailrc.txt.gz: $gzerrno";
+
+  my $dir = catfile( $self->config->get('local'), 'authors' );
+  my $created = () = make_path $dir;
+  unless( -d $dir ) {
+  	croak sprintf "$0: directory <%s> does not exist. Cannot continue", $dir;
+  }
+
+  my $mailrc_file = catfile( $dir,  '01mailrc.txt.gz' );
+  unless( -e $mailrc_file ) {
+  	return [];
+  }
+
+  my $gzread = gzopen( $mailrc_file, 'rb' ) or do {
+    carp sprintf "$0: cannot open <%s>: <%s>\n", $mailrc_file, $gzerrno;
+    return []
+  };
 
   my @authors;
   my $author;
@@ -783,16 +799,20 @@ sub _writeauthors {
   my $self    = shift;
   my $authors = shift;
 
-  my $gzwrite
-   = gzopen( $self->config->get( 'local' ) . '/authors/01mailrc.txt.gz',
-    'wb' )
-   or croak
-   "Can't open local authors/01mailrc.txt.gz for writing: $gzerrno";
+  my $file = catfile(
+  	$self->config->get( 'local' ),
+  	'authors',
+  	'01mailrc.txt.gz'
+  );
+
+  my $gzwrite = gzopen( $file, 'wb' )
+    or croak sprintf
+    "$0: cannot open local <%s> authors/01mailrc.txt.gz for writing: %s",
+      $file, "$gzerrno";
 
   $gzwrite->gzwrite( "$_\n" ) for ( sort @$authors );
 
   $gzwrite->gzclose;
-
 }
 
 sub _fmtdate {
