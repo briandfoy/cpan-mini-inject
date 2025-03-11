@@ -245,6 +245,25 @@ sub set { $_[0]->{ $_[1] } = $_[2] }
 
 =back
 
-=cut
+=head1 AUTHOR
 
-1;
+Shawn Sorichetti C<< <ssoriche@coloredblocks.net> >>
+
+=head1 SOURCE AVAILABILITY
+
+The main repository is on GitHub:
+
+	https://github.com/briandfoy/cpan-mini-inject
+
+There are also backup repositories on several other services:
+
+	https://bitbucket.org/briandfoy/cpan-mini-inject
+	https://codeberg.org/briandfoy/cpan-mini-inject
+	https://gitlab.com/briandfoy/cpan-mini-inject
+
+=head1 COPYRIGHT & LICENSE
+
+Copyright 2004 Shawn Sorichetti, All Rights Reserved.
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
