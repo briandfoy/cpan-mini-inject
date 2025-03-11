@@ -47,14 +47,14 @@ ok can_fetch($url), "URL $url is available";
 
 my $mcpi = CPAN::Mini::Inject->new;
 $mcpi->loadcfg( 't/.mcpani/config' )->parsecfg;
-$mcpi->{config}{remote} =~ s/:\d{5}\b/:$port/;
+$mcpi->{config}{remote} =~ s/:\d{5}\b/:$port/a;
 
 $mcpi->testremote;
 is( $mcpi->{site}, $url, "Site URL is $url" );
 ok can_fetch($url), "URL $url is available";
 
 $mcpi->loadcfg( 't/.mcpani/config_badremote' )->parsecfg;
-$mcpi->{config}{remote} =~ s/:\d{5}\b/:$port/;
+$mcpi->{config}{remote} =~ s/:\d{5}\b/:$port/a;
 
 SKIP: {
   skip 'Test fails with funky DNS providers', 1
