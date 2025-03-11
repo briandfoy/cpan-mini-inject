@@ -313,12 +313,6 @@ There are also backup repositories on several other services:
 	https://codeberg.org/briandfoy/cpan-mini-inject
 	https://gitlab.com/briandfoy/cpan-mini-inject
 
-=head1 ISSUES
-
-Report issues to the GitHub queue:
-
-	https://github.com/briandfoy/cpan-mini-inject/issues
-
 =head1 COPYRIGHT & LICENSE
 
 Copyright 2004 Shawn Sorichetti, All Rights Reserved.
