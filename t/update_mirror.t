@@ -117,7 +117,6 @@ subtest 'mirror state' => sub {
 	ok( -e catfile( $tmp_dir, qw(authors id S SS SSORICHE CPAN-Mini-Inject-1.01.tar.gz) ), 'CPAN::Mini::Inject exixts' );
 	};
 
-sleep 1; # allow locks to expire
 kill( 9, $pid );
 
 done_testing();
