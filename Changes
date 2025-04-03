@@ -1,5 +1,8 @@
 Revision history for CPAN-Mini-Inject
 
+1.012 2025-04-03T04:07:45Z
+	* fix a documentation nit with add() (GitHub #21)
+
 1.011 2025-02-13T02:38:03Z
 	* HTTP::Daemon and Net::EmptyPort are no longer prereqs and are
 	moved to TEST_REQUIRES. If they are not present, those tests that
