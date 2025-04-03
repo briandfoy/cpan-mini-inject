@@ -314,9 +314,9 @@ C<SSORICHE> is copied to F<MYCPAN/authors/id/S/SS/SSORICHE>. add
 creates the required directory structure below the repository.
 
 Packages found in the distribution will be added to the module list
-(for example both C<CPAN::Mini::Inject> and
-C<CPAN::Mini::Inject::Config> will be added to the
-F<modules/02packages.details.txt.gz> file).
+For example both C<CPAN::Mini::Inject> and
+C<CPAN::Mini::Inject::Config> will be added to the F<modulelist> file
+in the repository.
 
 Packages will be looked for in the C<provides> key of the META file if
 present, otherwise the files in the dist will be searched. See
