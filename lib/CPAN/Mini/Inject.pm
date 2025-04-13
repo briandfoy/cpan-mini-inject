@@ -71,21 +71,21 @@ our @ISA     = qw( CPAN::Mini );
 If you're not going to customize the way CPAN::Mini::Inject works you
 probably want to look at the L<mcpani> command instead.
 
-    use CPAN::Mini::Inject;
+	use CPAN::Mini::Inject;
 
-    $mcpi=CPAN::Mini::Inject->new;
-    $mcpi->parsecfg('t/.mcpani/config');
+	$mcpi=CPAN::Mini::Inject->new;
+	$mcpi->parsecfg('t/.mcpani/config');
 
-    $mcpi->add(
-      module   => 'CPAN::Mini::Inject',
-    authorid => 'SSORICHE',
-    version  => ' 0.01',
-    file     => 'mymodules/CPAN-Mini-Inject-0.01.tar.gz'
-  );
+	$mcpi->add(
+		module   => 'CPAN::Mini::Inject',
+		authorid => 'SSORICHE',
+		version  => ' 0.01',
+		file     => 'mymodules/CPAN-Mini-Inject-0.01.tar.gz'
+	);
 
-    $mcpi->writelist;
-    $mcpi->update_mirror;
-    $mcpi->inject;
+	$mcpi->writelist;
+	$mcpi->update_mirror;
+	$mcpi->inject;
 
 =head1 DESCRIPTION
 
@@ -104,10 +104,10 @@ into a I<local> CPAN mirror.
 Each method in CPAN::Mini::Inject returns a CPAN::Mini::Inject object which
 allows method chaining. For example:
 
-    my $mcpi=CPAN::Mini::Inject->new;
-    $mcpi->parsecfg
-         ->update_mirror
-         ->inject;
+	my $mcpi=CPAN::Mini::Inject->new;
+	$mcpi->parsecfg
+		 ->update_mirror
+		 ->inject;
 
 A C<CPAN::Mini::Inject> ISA L<CPAN::Mini>. Refer to the
 L<documentation|CPAN::Mini> for that module for details of the interface
@@ -272,7 +272,9 @@ sub testremote {
 
 =item C<update_mirror>
 
-This is a subclass of CPAN::Mini.
+This is a subclass of CPAN::Mini. It will grab fresh versions for all
+modules and data files. This cleans up anything that you have injected,
+so you must call `inject` again.
 
 =cut
 
@@ -348,12 +350,12 @@ C<add> will try to extract it from the distribution.
 
 =back
 
-  $mcpani->add(
-    module   => 'Module::Name',
-  authorid => 'SOMEAUTHOR',
-  version  => 0.01,
-  file     => './Module-Name-0.01.tar.gz'
-  );
+	$mcpani->add(
+		module   => 'Module::Name',
+		authorid => 'SOMEAUTHOR',
+		version  => 0.01,
+		file     => './Module-Name-0.01.tar.gz'
+	);
 
 =cut
 
