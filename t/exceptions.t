@@ -140,7 +140,7 @@ HERE
 				chmod $mode, $repo_dir
 					or diag sprintf "Could not set mode <%o> on <%s>", $mode, $repo_dir;
 				is mode($repo_dir), $mode, "repo dir has mode $mode";
-				ok ! -w $repo_dir, 'repo dir is not writable'
+				ok ! (-w $repo_dir), 'repo dir is not writable'
 					or diag sprintf "Mode on <%s> is <%o>, but should have been <%o>", $repo_dir, mode($repo_dir), $mode;
 				};
 
