@@ -135,10 +135,13 @@ HERE
 
 			my $repo_dir = catfile $temp_dir, 'read-only-injects';
 			subtest 'create read-only repo dir' => sub {
+				my $mode = 0555;
 				ok make_path($repo_dir), 'created repo dir';
-				chmod 0555, $repo_dir;
-				is mode($repo_dir), 0555, 'repo dir has mode 444';
-				ok ! -w $repo_dir, 'repo dir is not writable';
+				chmod $mode, $repo_dir
+					or diag sprintf "Could not set mode <%o> on <%s>", $mode, $repo_dir;
+				is mode($repo_dir), $mode, "repo dir has mode $mode";
+				ok ! -w $repo_dir, 'repo dir is not writable'
+					or diag sprintf "Mode on <%s> is <%o>, but should have been <%o>", $repo_dir, mode($repo_dir), $mode;
 				};
 
 			subtest 'create read-only repo config file' => sub {
