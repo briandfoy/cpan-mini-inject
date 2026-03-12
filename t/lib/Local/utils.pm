@@ -10,7 +10,7 @@ sub global_config_exists {
 
 
 sub has_modes {
-	return 0 if( $^O =~ /^MSWin|^cygwin/ or exists $ENV{'GITHUB_ACTION'});
+	return 0 if $^O =~ /^MSWin|^cygwin/;
 	return 1;
 	}
 
