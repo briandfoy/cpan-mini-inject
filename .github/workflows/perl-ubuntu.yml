@@ -1,0 +1,211 @@
+# brian's standard GitHub Actions Ubuntu config for Perl 5 modules
+# version 20260126.001
+# https://github.com/briandfoy/github_workflows
+# https://github.com/features/actions
+# This file is licensed under the Artistic License 2.0
+#
+# This uses the AUTOMATED_TESTING environment that you can set up
+# in your repo settings. Or not. It still works if it isn't defined.
+# In that environment, add whatever environment variables or secrets
+# that you want.
+#
+# Variables that you can set in the "automated_testing" environment:
+#
+# EXTRA_CPAN_MODULES  - extra arguments to the first call to cpan.
+#                       Just use EXTRA_CPANM_MODULES though. This is
+#                       here for legacy
+#
+# EXTRA_CPANM_MODULES - extra arguments to the first call to cpanm.
+#                       this is useful to install very particular
+#                       modules, such as DBD::mysql@4.050
+#
+# UBUNTU_EXTRA_APT_GET - extra packages to install before we start
+#
+# UBUNTU_EXTRA_CPANM_MODULES - extra arguments to the first call to cpanm
+#                       but only on Ubuntu. Other workflows won't use this.
+#                       this is useful to install very particular
+#                       modules, such as DBD::mysql@4.050
+
+---
+name: ubuntu
+
+# https://github.com/actions/checkout/issues/1590
+env:
+    ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: true
+    PERL_LWP_SSL_VERIFY_HOSTNAME: 0
+
+# https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/using-concurrency
+concurrency:
+    group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref || github.run_id }}
+    cancel-in-progress: true
+
+permissions:
+    actions: write
+    contents: read
+
+on:
+    push:
+        branches:
+            - '**'
+            - '!**appveyor**'
+            - '!**circleci**'
+            - '!**freebsd**'
+            - '!**macos**'
+            - '!**notest**'
+            - '!**release**'
+            - '!**windows**'
+        tags-ignore:
+            # I tag release pushes but those should have already been tested
+            - 'release-*'
+        paths-ignore:
+            # list all the files which are irrelevant to the tests
+            # non-code, support files, docs, etc
+            - '.appveyor.yml'
+            - '.circleci'
+            - '.gitattributes'
+            - '.github/workflows/macos.yml'
+            - '.github/workflows/release.yml'
+            - '.github/workflows/windows.yml'
+            - '.gitignore'
+            - '.releaserc'
+            - 'Changes'
+            - 'LICENSE'
+            - 'README.pod'
+            - 'README.md'
+            - 'SECURITY.md'
+    pull_request:
+    # weekly build on the master branch just to see what CPAN is doing
+    schedule:
+        - cron: "40 2 * * 6"
+jobs:
+    perl:
+        environment: automated_testing
+        runs-on: ${{ matrix.os }}
+        strategy:
+            matrix:
+                os:
+                    - ubuntu-latest
+                perl-version:
+                    - latest
+        container:
+            image: perl:${{ matrix.perl-version }}
+        steps:
+            - uses: actions/checkout@v5
+            - name: git corrections
+              run: |
+                git config --global --add safe.directory "$(pwd)"
+            - name: Platform check
+              run: uname -a
+            - name: setup platform
+              if: vars.UBUNTU_EXTRA_APT_GET != ''
+              run: |
+                apt-get -y -o Acquire::Retries=5 update
+                apt-get -y -o Acquire::Retries=5 upgrade
+                apt-get -y -o Acquire::http::No-Cache=True -o Acquire::Retries=5 install ${{ vars.UBUNTU_EXTRA_APT_GET }}
+            - name: Perl version check
+              run: |
+                perl -V
+                perl -v | perl -0777 -ne 'm/(v5\.\d+)/ && print "PERL_VERSION=$1"' >> $GITHUB_ENV
+# Restore the last module installation for this OS/perl combination. This
+# saves several minutes in some cases. When cpan installs updates, the
+# 'save' counterpart for 'restore' will update the cache. If this fails we
+# keep going, although the module installation will take longer
+            - name: Restore Perl modules
+              id: perl-modules-cache-restore
+              continue-on-error: true
+              uses: actions/cache/restore@v4
+              with:
+                key: ${{ runner.os }}-${{ matrix.perl-version }}-modules
+                path: |
+                  /usr/local/lib/perl5
+                  /usr/local/bin/cover
+                  /usr/local/bin/cpan
+# We cannot reuse a cache key that exists, so we'll delete it and then save it again
+# There are various hacks for this, but GitHub has so far declined to
+# do what so many people want. This seems like a long way to go to do
+# this, but most of the problem is translating the unique cache key name
+# to another hidden ID value. This is pervasive in the GitHub API. If we
+# fail this step, no big whoop. Outside pull requesters are likely to fail
+# this step since their token won't have permissions to the repo cache
+            - name: Delete cache
+              continue-on-error: true
+              id: delete-cache
+              env:
+                GH_TOKEN: ${{ github.token }}
+              run: |
+                gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /repos/${{ github.repository }}/actions/caches \
+                  | jq -r '.actions_caches[] | select(.key == "${{ steps.perl-modules-cache-restore.outputs.cache-primary-key }}") | .id' \
+                  | xargs -I{} gh api --method DELETE -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: 2022-11-28" /repos/${{ github.repository }}/actions/caches/{}
+# Most of the module stuff has moved into the images I created in GHCR
+            - name: Install cpanm modules
+              if: ( vars.EXTRA_CPANM_MODULES != '' || vars.UBUNTU_EXTRA_CPANM_MODULES != '' )
+              run: |
+                cpanm --notest ${{ vars.EXTRA_CPANM_MODULES }} ${{ vars.UBUNTU_EXTRA_CPANM_MODULES }}
+            - name: Install cpan and multiple modules
+              if: vars.EXTRA_CPAN_MODULES != ''
+              run: |
+                cpan -M http://www.cpan.org -T ${{ vars.EXTRA_CPAN_MODULES }}
+# Install the dependencies, again not testing them. This installs the
+# module in the current directory, so we end up installing the module,
+# but that's not a big deal.
+            - name: Install dependencies
+              run: |
+                cpanm --notest --installdeps --with-suggests --with-recommends .
+            - name: Show cpanm failures
+              if: ${{ failure() }}
+              run: |
+                cat /github/home/.cpanm/work/*/build.log
+            - name: Run tests
+              run: |
+                perl Makefile.PL
+                make test
+# Run author tests, but only if there's an xt/ directory
+            - name: Author tests
+              if: hashFiles('xt') != ''
+              run: |
+                prove -r -b xt
+# Running tests in parallel should be faster, but it's also more
+# tricky in cases where different tests share a feature, such as a
+# file they want to write to. Parallel tests can stomp on each other.
+# Test in parallel to catch that, because other people will test your
+# stuff in parallel.
+            - name: Run tests in parallel
+              run: |
+                perl Makefile.PL
+                HARNESS_OPTIONS=j10 make test
+# The disttest target creates the distribution, unwraps it, changes
+# into the dist dir, then runs the tests there. That checks that
+# everything that should be in the dist is in the dist. If you forget
+# to update MANIFEST with new modules, data files, and so on, you
+# should notice the error.
+            - name: Run distribution tests
+              run: |
+                perl Makefile.PL
+                make disttest
+                make clean
+# And, coverage reports, but only under 5.12 and later since modern
+# Devel::Cover instances don't work with earlier versions as of
+# Devel::Cover 1.39
+            - name: Run coverage tests
+              if: env.PERL_VERSION != 'v5.8' && env.PERL_VERSION != 'v5.10'
+              continue-on-error: true
+              env:
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                cpanm --notest Devel::Cover Devel::Cover::Report::Coveralls
+                perl Makefile.PL
+                cover -test +ignore 'Makefile.PL' -report coveralls
+# Now always save the Perl modules in case we updated some versions. We'd like
+# this step to work, but if it doesn't, it's not a big deal. The always() captures
+# any work that we did even if something failed.
+            - name: Save Perl modules
+              continue-on-error: true
+              id: perl-modules-cache-save
+              uses: actions/cache/save@v4
+              if: always()
+              with:
+                key: ${{ steps.perl-modules-cache-restore.outputs.cache-primary-key }}
+                path: |
+                  /usr/local/lib/perl5
+                  /usr/local/bin/cover
+                  /usr/local/bin/cpan
