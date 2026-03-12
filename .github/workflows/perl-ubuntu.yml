@@ -27,7 +27,7 @@
 #                       modules, such as DBD::mysql@4.050
 
 ---
-name: ubuntu
+name: perl-ubuntu
 
 # https://github.com/actions/checkout/issues/1590
 env:
